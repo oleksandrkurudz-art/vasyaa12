@@ -106,6 +106,14 @@ npx prettier --write "<files>"
 - Env на Vercel (Production): `DATABASE_URL`, `ADMIN_PASSWORD`, `SESSION_SECRET`. У репо секретів НЕМАЄ
   (лише локальний `.env` у gitignore). ⚠️ Пароль БД містить `@` → у `DATABASE_URL` кодується як `%40`.
 
+### Завантаження фото обкладинок (2026-06-16)
+- В адмінці (форма статті) фото можна вибрати з галереї — вантажиться у **Supabase Storage**,
+  публічний бакет `media` (≤10 МБ, лише зображення). Хелпер — `src/lib/storage.ts`
+  (`server-only`, service-role ключ, обходить RLS). Поле `coverFile` має пріоритет над URL-полем.
+- Env (Vercel Production + локальний `.env`): `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
+  (формат `sb_secret_…` — СЕКРЕТ, лише сервер). `next.config` підняв `serverActions.bodySizeLimit` до `10mb`.
+- Форма реклами (`AdForm`) поки на URL — той самий хелпер легко підключити (`uploadImage(file, "ads")`).
+
 ### Нюанси деплою / що можна доробити
 - GitHub-автодеплой НЕ під'єднано (акаунт Vercel без GitHub login-connection) — наразі деплой
   вручну: `vercel deploy --prod`. Щоб увімкнути авто-деплой на push: під'єднати GitHub у налаштуваннях Vercel.
