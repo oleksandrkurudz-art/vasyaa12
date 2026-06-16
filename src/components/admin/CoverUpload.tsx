@@ -6,8 +6,8 @@ import { useRef, useState } from "react";
 // тіло запиту до serverless-функції ~4.5 МБ — фото з телефона (5-8 МБ) інакше
 // впаде з 413 ще до сервера. Зменшуємо до 1600px і кодуємо у WebP у канвасі,
 // тоді на сервер іде ~100-400 КБ (а серверний sharp лишається запобіжником).
-const MAX_DIMENSION = 1600;
-const QUALITY = 0.82;
+const MAX_DIMENSION = 2048;
+const QUALITY = 0.9;
 
 const inputClass =
   "w-full rounded-md border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-blue-500";
@@ -106,7 +106,7 @@ export default function CoverUpload({ defaultUrl }: { defaultUrl?: string }) {
       />
       <p className="mt-1 text-xs text-neutral-500">
         Виберіть фото з галереї. Воно автоматично стискається у браузері
-        (макс. 1600px, WebP), щоб не займало багато місця.
+        (макс. 2048px, WebP, висока якість), щоб не займало багато місця.
         {note && (
           <span
             className={`ml-1 font-medium ${busy ? "text-neutral-500" : "text-green-700"}`}

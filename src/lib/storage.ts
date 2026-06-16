@@ -7,10 +7,12 @@ import sharp from "sharp";
 // тому використовуємо service-role ключ (обходить RLS) — він серверний секрет.
 const BUCKET = "media";
 
-// Растрові фото перед заливкою стискаємо: авто-поворот за EXIF,
-// зменшення до цього розміру (бік) і конвертація у WebP.
-const MAX_DIMENSION = 1600;
-const WEBP_QUALITY = 80;
+// Резервне стиснення на сервері (для випадку без JS, коли надсилається
+// сирий JPEG/PNG): авто-поворот за EXIF, зменшення і конвертація у WebP.
+// Якщо браузер уже віддав WebP — НЕ перекодовуємо повторно (уникаємо
+// втрати якості від подвійного стиснення), просто заливаємо як є.
+const MAX_DIMENSION = 2048;
+const WEBP_QUALITY = 90;
 
 function client() {
   const url = process.env.SUPABASE_URL;
@@ -31,8 +33,10 @@ const ALLOWED = new Set([
   "image/avif",
 ]);
 
-// GIF (анімація) і SVG (вектор) не чіпаємо — стискати немає сенсу / зламає їх.
-const PASSTHROUGH = new Set(["image/gif", "image/svg+xml"]);
+// Заливаємо без обробки:
+// - webp — уже стиснутий браузером (повторне перекодування псує якість);
+// - gif (анімація) і svg (вектор) — стискати немає сенсу / зламає їх.
+const PASSTHROUGH = new Set(["image/webp", "image/gif", "image/svg+xml"]);
 
 type Optimized = { body: Buffer; contentType: string; ext: string };
 
