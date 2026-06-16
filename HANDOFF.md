@@ -23,14 +23,14 @@
 ## 2. Стек
 
 - **Next.js 16** (App Router, Turbopack) · **React 19** · **TypeScript** · **Tailwind 4**
-- **Prisma 7**: SQLite локально → Postgres на проді
+- **Prisma 7**: **Postgres (Supabase)** — і локально, і на проді (SQLite-версію залишено в історії git)
 - ⚠️ **Це НЕ той Next.js, який ти знаєш** (див. `AGENTS.md`): API можуть відрізнятись від
   тренувальних даних. Перед написанням коду читай `node_modules/next/dist/docs/`.
 
 ### Особливості Prisma 7 (важливо!)
-- У `prisma/schema.prisma` **немає `url`** у datasource — лише `provider`.
+- У `prisma/schema.prisma` **немає `url`** у datasource — лише `provider` (`postgresql`).
 - URL для міграцій — у `prisma.config.ts` (`datasource.url`), потрібен `dotenv`.
-- Рантайм-клієнт — через **driver adapter** (`@prisma/adapter-better-sqlite3`) у `src/lib/db.ts`.
+- Рантайм-клієнт — через **driver adapter** (`@prisma/adapter-pg`) у `src/lib/db.ts`.
 - Згенерований клієнт — у `src/generated/prisma`, імпорт: `@/generated/prisma/client`.
 - Після зміни схеми інколи треба явно `npx prisma generate` (migrate dev не завжди регенерує).
 
@@ -56,11 +56,13 @@ src/
     articles.ts               — запити до БД (cache() для дедуплікації)
     categories.ts             — 7 розділів + SITE_NAME + SITE_SLOGAN
     auth.ts                   — cookie-сесія адмінки
-    db.ts                     — Prisma singleton (driver adapter)
+    db.ts                     — Prisma singleton (driver adapter @prisma/adapter-pg)
+    storage.ts                — завантаження фото у Supabase Storage (server-only, sharp)
     tags.ts, slug.ts, format.ts, images.ts
   generated/prisma/           — згенерований Prisma-клієнт
+  app/icon.svg, app/icon.png  — favicon (бейдж «Г», у стилі Logo)
 prisma/
-  schema.prisma · seed.ts
+  schema.prisma · seed.ts · migrations/ (Postgres init)
 prisma.config.ts · next.config.ts
 ```
 
@@ -82,8 +84,9 @@ npm run lint
 npx prettier --write "<files>"
 ```
 
-**Адмінка:** `/admin` (логін `/admin/login`). Пароль — `ADMIN_PASSWORD` у `.env`
-(локально `admin`). `.env` у gitignore.
+**Адмінка:** `/admin` (логін `/admin/login`). Пароль — `ADMIN_PASSWORD` (задано в `.env` локально
+й у Vercel env; у репо НЕ зберігається). `.env` у gitignore і вже містить реальні Supabase-креденшали
++ секрети — локальний `npm run dev` ходить у ту саму прод-базу Supabase.
 
 ---
 
@@ -109,11 +112,13 @@ npx prettier --write "<files>"
 ### Завантаження + оптимізація фото обкладинок (2026-06-16)
 - В адмінці фото вибирається з галереї → **Supabase Storage**, публічний бакет `media`.
 - **Стиснення у БРАУЗЕРІ перед відправкою** — `src/components/admin/CoverUpload.tsx`
-  ("use client", canvas → WebP, макс. 1600px). ⚠️ Причина критична: **Vercel ріже тіло
-  запиту до serverless-функції ~4.5 МБ**, тож фото з телефона (5-8 МБ) падало з **413**
+  ("use client", canvas → WebP, макс. **2048px, якість 0.9**). ⚠️ Причина критична: **Vercel ріже
+  тіло запиту до serverless-функції ~4.5 МБ**, тож фото з телефона (5-8 МБ) падало з **413**
   ще до сервера. `serverActions.bodySizeLimit` тут НЕ допомагає (це нижчий платформенний ліміт).
 - **Серверний sharp** — `src/lib/storage.ts` (`server-only`, service-role ключ, обходить RLS):
-  запобіжник, ще раз rotate/resize/WebP перед заливкою. Поле `coverFile` має пріоритет над URL.
+  запобіжник для випадку без JS. ⚠️ WebP від браузера **НЕ перекодовує повторно** (інакше —
+  подвійне стиснення й видима втрата якості, вже виправлено); sharp чіпає лише сирий JPEG/PNG.
+  Поле `coverFile` має пріоритет над полем URL.
 - ⚠️ `sharp` — нативний модуль; Vercel не включав його у бандл → 500 "Failed to load external
   module". Фікс у `next.config`: `outputFileTracingIncludes: { "/admin/**":
   ["node_modules/sharp/**/*", "node_modules/@img/**/*"] }`.
@@ -127,28 +132,42 @@ npx prettier --write "<files>"
 - Схемою керуємо через Supabase MCP/dashboard (build не робить `migrate deploy`). Для нової міграції:
   `npx prisma migrate diff --from-empty/--from-schema ... --script` → застосувати через MCP `apply_migration`.
 
+### UI-полірування (2026-06-16, після деплою)
+- **Тікер + «Терміново» прибрано всюди**: видалено `BreakingTicker`, бейджі на картці й сторінці
+  статті, чекбокс у формі адмінки, запит `getTickerArticles`, CSS-анімацію. Поле `breaking`
+  лишилось у схемі (не використовується, без міграції).
+- **Навігація**: липка (`NavBar.tsx`), фон `neutral-100`; ширші відступи; **бургер на телефоні**.
+- **Герой**: ряд другорядних новин приховано на телефоні.
+- **Перегляди показуються лише коли > 100** — хелпер `hasEnoughViews` у `src/lib/format.ts`,
+  застосований у `ArticleCard`, `HeroBlock`, `Sidebar`, сторінці статті (інакше ховаємо й іконку/крапку).
+- **Favicon**: `src/app/icon.svg` + `icon.png` (бейдж «Г» на синьому градієнті), дефолтний прибрано.
+- **Фото обкладинок**: стиснення в браузері (2048px, q0.9) + WebP passthrough на сервері (без подвійного стиснення).
+
 ### Можливі наступні кроки (пропонувалися, не обрані)
 Живі курси/погода (API НБУ), спеціалізовані розділи (Афіша з датами, Вакансії…),
 іконки соцмереж/«НАЖИВО»/перемикач мови в шапці, темна тема, власна SVG-емблема замість «Г».
 
 ---
 
-## 6. Дизайн у стилі ТСН (зроблено в останній сесії)
+## 6. Дизайн у стилі ТСН
 
-**Шапка** (`src/components/Header.tsx`) — темно-сіра (`neutral-900`), 3 ряди:
-1. **Біжучий рядок** «Терміново» (`BreakingTicker.tsx`) — тонкий, бейдж замість суцільного
-   блоку, на всю ширину екрана. Раніше був під шапкою — перенесли в самий верх.
-2. **Лого + сервіси**: логотип (`Logo.tsx` — градієнтний бейдж «Г» з обідком і акцент-смужкою,
-   використовується і в Footer), поруч дата «ПН, 15 червня», праворуч — курси валют картками
-   з прапорами 🇺🇸🇪🇺, пошук-пігулка «🔍 Пошук» (веде на `/search`). Ряд **на всю ширину**.
-3. **Меню розділів** (`NavLinks.tsx`) — **біла** смуга, темний текст, синє підкреслення
-   активного. Між темною шапкою і білим меню — **синя акцент-лінія** (`brand-600`) + тінь.
+**Шапка** (`src/components/Header.tsx`) — темно-сіра (`neutral-900`), **2 ряди** (біжучий рядок
+прибрано — див. розділ 10):
+1. **Лого + сервіси**: логотип (`Logo.tsx` — градієнтний бейдж «Г» з обідком і акцент-смужкою,
+   використовується і в Footer), поруч дата, праворуч — курси валют картками з прапорами 🇺🇸🇪🇺,
+   пошук-пігулка «🔍 Пошук» (веде на `/search`). Ряд **на всю ширину**. Шапка НЕ липка — скролиться вгору.
+2. **Меню розділів** — окремий **липкий** компонент `NavBar.tsx` (НЕ всередині `<header>`!), що
+   лишається зверху при скролі. Фон — **світло-сірий** (`neutral-100`, не білий — щоб зливатися
+   з темною шапкою), синя акцент-лінія (`brand-600`) зверху + тінь знизу. Меню — `NavLinks.tsx`:
+   на десктопі горизонтальне (широкі відступи), **на телефоні — бургер** із випадним списком.
+   (Біжучий рядок термінових прибрано — див. UI-чейнджлог у розділі 5.)
 
 **Головна** (`HeroBlock.tsx`) — герой у стилі ТСН:
 - Фонове фото головної новини **на всю ширину екрана (full-bleed)**, флеш під шапкою.
 - Зверху градієнт, на ньому бейдж категорії + великий serif-заголовок + мета (дата · перегляди).
-- Внизу поверх фото — **ряд із 3 другорядних новин** (мініатюра + категорія + заголовок).
-- Бейджа «Терміново» в герої НЕМАЄ (прибрали — дублював тікер у шапці).
+- Внизу поверх фото — **ряд із 3 другорядних новин** (мініатюра + категорія + заголовок),
+  але **на телефоні цей ряд приховано** (`hidden sm:grid`) — лишається тільки головна новина.
+- Бейджа «Терміново» немає.
 
 ### ⚠️ Архітектурне рішення про ширину (важливо для нових сторінок!)
 `<main>` у `(public)/layout.tsx` **більше не має `max-w-7xl`** — він на всю ширину,
@@ -160,7 +179,7 @@ npx prettier --write "<files>"
 
 ### Палітра (`src/app/globals.css`, `@theme`)
 - `brand-*` — синій акцент (`brand-600 = #2563eb`).
-- `urgent-*` — червоний для термінового (`urgent-600 = #dc2626`).
+- `urgent-*` — червоний (лишився в темі, але **більше ніде не використовується** — «Терміново» прибрано).
 - Шрифти: **Inter** (текст) + **Merriweather** (заголовки, клас `font-display`), кирилиця.
 
 ---
@@ -169,12 +188,12 @@ npx prettier --write "<files>"
 
 | Файл | Призначення |
 |------|-------------|
-| `Header.tsx` | Темна шапка ТСН (3 ряди) |
-| `BreakingTicker.tsx` | Біжучий рядок термінових (async, у шапці) |
+| `Header.tsx` | Темна шапка ТСН (2 ряди, НЕ липка) |
+| `NavBar.tsx` | **Липка** смуга меню (сіра, окремо від хедера) — обгортає `NavLinks` |
 | `Logo.tsx` | Фірмовий знак (size="md"/"sm"), у Header і Footer |
-| `NavLinks.tsx` | Меню розділів ("use client", активний стан) |
+| `NavLinks.tsx` | Меню розділів ("use client"): десктоп — горизонт., телефон — **бургер** |
 | `SearchBox.tsx` | Поле пошуку ("use client") — на сторінці `/search` |
-| `HeroBlock.tsx` | Full-bleed герой головної (featured + 3 secondary) |
+| `HeroBlock.tsx` | Full-bleed герой (featured + 3 secondary; secondary приховано на телефоні) |
 | `ArticleCard.tsx` | Картка новини у стрічці |
 | `Sidebar.tsx` | Популярне 🔥 / Погода / Курси (погода й курси — статичні демо) |
 | `AdSlot.tsx` | Блок контекстної реклами біля статті |
@@ -182,6 +201,9 @@ npx prettier --write "<files>"
 | `Cover.tsx` | Обгортка `next/image` (fill + blur + фолбек) |
 | `Footer.tsx` | Підвал |
 | `admin/ArticleForm.tsx`, `admin/AdForm.tsx` | Форми адмінки |
+| `admin/CoverUpload.tsx` | Завантаження+стиснення обкладинки ("use client", canvas→WebP) |
+
+_Видалено: `BreakingTicker.tsx` (біжучий рядок прибрано)._
 
 ---
 
@@ -198,6 +220,15 @@ npx prettier --write "<files>"
 - Після правок: `npx tsc --noEmit` + `npm run lint` + `prettier`. Тримай код структурним
   (це окреме прохання користувача).
 - Погода і курси валют у шапці/сайдбарі — **статичні демо-значення**, не живі дані.
+- **Деплой — вручну**: `vercel deploy --prod --yes` (Vercel CLI залогінений як `oleksandrkurudz-art`;
+  GitHub-автодеплой не під'єднано). Env додаються через `printf '%s' '<val>' | vercel env add <NAME> production`.
+- **Перевірка прода без браузера**: `curl` сторінок; для адмінки — згенерувати cookie
+  `admin_session = sha256("<ADMIN_PASSWORD>:<SESSION_SECRET>")` і передати в `-H "Cookie:"`.
+  Реальне завантаження тестується POST-ом multipart на серверну дію (поле `$ACTION_ID_…` з HTML форми).
+- **Адаптивне (бургер/приховування) перевіряти** через `preview_resize` (mobile/desktop) +
+  `preview_eval` (`getComputedStyle().display`, `offsetWidth`), бо `curl` не бачить медіа-брейкпойнтів.
+- **Supabase MCP** активний (project ref `pruswnyuxxaqmxrchhzu`): `execute_sql`/`apply_migration`
+  для схеми й даних; пароль БД і service-role ключ MCP НЕ віддає (їх дає користувач).
 
 ---
 
@@ -213,4 +244,7 @@ npx prettier --write "<files>"
 
 ---
 
-_Останнє оновлення: 2026-06-16. Останні зміни — липка навігація (`NavBar.tsx`), міграція на Postgres (Supabase) + деплой на Vercel (https://vasyaa12.vercel.app)._
+_Останнє оновлення: 2026-06-16. У цій сесії: деплой на Vercel + міграція на Supabase Postgres;
+завантаження+стиснення фото обкладинок; favicon; UI-полірування (тікер/«Терміново» прибрано,
+липка сіра навігація, бургер на телефоні, перегляди лише >100, герой без secondary на телефоні).
+Живий сайт — https://vasyaa12.vercel.app._
