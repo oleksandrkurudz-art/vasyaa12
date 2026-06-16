@@ -14,7 +14,11 @@ export default function ArticleForm({
   categories: Category[];
 }) {
   return (
-    <form action={saveArticle} className="space-y-5">
+    <form
+      action={saveArticle}
+      encType="multipart/form-data"
+      className="space-y-5"
+    >
       {article && <input type="hidden" name="id" value={article.id} />}
 
       <div>
@@ -78,8 +82,33 @@ export default function ArticleForm({
         />
       </div>
 
-      <div>
-        <label className={labelClass}>URL обкладинки</label>
+      <div className="rounded-md border border-neutral-200 bg-neutral-50 p-4">
+        <label className={labelClass}>Обкладинка</label>
+
+        {article?.coverImage && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={article.coverImage}
+            alt="Поточна обкладинка"
+            className="mt-2 h-40 w-full rounded-md border border-neutral-200 object-cover"
+          />
+        )}
+
+        {/* Завантаження з галереї — має пріоритет над URL нижче */}
+        <input
+          type="file"
+          name="coverFile"
+          accept="image/*"
+          className="mt-2 block w-full text-sm text-neutral-700 file:mr-3 file:rounded-md file:border-0 file:bg-blue-700 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-blue-800"
+        />
+        <p className="mt-1 text-xs text-neutral-500">
+          Виберіть фото з галереї (до 10 МБ). Якщо завантажите файл — він
+          замінить URL нижче.
+        </p>
+
+        <label className="mt-3 block text-xs font-medium text-neutral-500">
+          …або вставте URL зображення
+        </label>
         <input
           name="coverImage"
           defaultValue={article?.coverImage ?? ""}

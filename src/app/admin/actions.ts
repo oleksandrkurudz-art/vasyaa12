@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import { requireAuth } from "@/lib/auth";
 import { slugify } from "@/lib/slug";
 import { formatTags } from "@/lib/tags";
+import { uploadImage } from "@/lib/storage";
 
 function str(fd: FormData, key: string): string {
   return String(fd.get(key) ?? "").trim();
@@ -34,11 +35,15 @@ export async function saveArticle(formData: FormData) {
   const customSlug = str(formData, "slug");
   const status = str(formData, "status") === "published" ? "published" : "draft";
 
+  // Завантажене фото має пріоритет; інакше — значення поля «URL обкладинки».
+  const uploaded = await uploadImage(formData.get("coverFile") as File | null);
+  const coverImage = uploaded ?? (str(formData, "coverImage") || null);
+
   const data = {
     title,
     excerpt: str(formData, "excerpt"),
     body: str(formData, "body"),
-    coverImage: str(formData, "coverImage") || null,
+    coverImage,
     tags: formatTags(str(formData, "tags").split(",")),
     categoryId,
     status,
