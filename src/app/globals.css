@@ -1,26 +1,56 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-merriweather);
+
+  /* Фірмова палітра — синій акцент + червоний для термінових */
+  --color-brand-50: #eff6ff;
+  --color-brand-100: #dbeafe;
+  --color-brand-200: #bfdbfe;
+  --color-brand-300: #93c5fd;
+  --color-brand-600: #2563eb;
+  --color-brand-700: #1d4ed8;
+  --color-brand-800: #1e40af;
+  --color-brand-900: #1e3a8a;
+
+  --color-urgent-50: #fef2f2;
+  --color-urgent-100: #fee2e2;
+  --color-urgent-600: #dc2626;
+  --color-urgent-700: #b91c1c;
+}
+
 :root {
   --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --foreground: #0a0a0a;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-inter), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Серифні заголовки новин — відчуття справжнього медіа */
+.font-display {
+  font-family: var(--font-merriweather), Georgia, serif;
+  letter-spacing: -0.01em;
+}
+
+/* Біжучий рядок термінових новин */
+@keyframes ticker {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.animate-ticker {
+  animation: ticker 40s linear infinite;
+}
+.ticker-pause:hover .animate-ticker {
+  animation-play-state: paused;
 }

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450">
+  <rect width="800" height="450" fill="#e5e5e5"/>
+  <g fill="#b0b0b0">
+    <circle cx="400" cy="190" r="60"/>
+    <path d="M250 330c0-55 67-90 150-90s150 35 150 90v40H250z"/>
+  </g>
+  <text x="400" y="420" font-family="Arial, sans-serif" font-size="22" fill="#9a9a9a" text-anchor="middle">Громада.Новини</text>
+</svg>

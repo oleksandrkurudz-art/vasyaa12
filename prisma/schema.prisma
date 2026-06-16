@@ -1,0 +1,71 @@
+// Схема даних новинного порталу.
+// Документація: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Розділ сайту (Новини громади, Політика, Бізнес, Афіша, Вакансії, Оголошення, Фотогалерея)
+model Category {
+  id       Int       @id @default(autoincrement())
+  slug     String    @unique
+  name     String
+  order    Int       @default(0)
+  articles Article[]
+  ads      Ad[]
+}
+
+// Новина / стаття
+model Article {
+  id          Int       @id @default(autoincrement())
+  slug        String    @unique
+  title       String
+  excerpt     String
+  body        String
+  coverImage  String?
+  // Теги через кому (SQLite не має масивів). Використовуються рушієм реклами.
+  tags        String    @default("")
+  status      String    @default("draft") // draft | published
+  breaking    Boolean   @default(false) // термінова новина (червоний бейдж)
+  views       Int       @default(0) // лічильник переглядів
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  categoryId  Int
+  category    Category  @relation(fields: [categoryId], references: [id])
+
+  @@index([status, publishedAt])
+  @@index([categoryId])
+}
+
+// Рекламодавець (місцевий бізнес)
+model Advertiser {
+  id        Int      @id @default(autoincrement())
+  name      String
+  type      String // будмагазин | АЗС | кафе | банк | аптека | інше
+  ads       Ad[]
+  createdAt DateTime @default(now())
+}
+
+// Рекламний банер
+model Ad {
+  id           Int        @id @default(autoincrement())
+  title        String
+  imageUrl     String
+  linkUrl      String
+  // Теги через кому — за ними рушій підбирає рекламу до статті
+  tags         String     @default("")
+  active       Boolean    @default(true)
+  advertiserId Int
+  advertiser   Advertiser @relation(fields: [advertiserId], references: [id])
+  categoryId   Int?
+  category     Category?  @relation(fields: [categoryId], references: [id])
+  createdAt    DateTime   @default(now())
+
+  @@index([active])
+}
