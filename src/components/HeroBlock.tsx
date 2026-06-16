@@ -62,9 +62,9 @@ export default function HeroBlock({
           </p>
         </Link>
 
-        {/* Ряд другорядних новин — поверх зображення */}
+        {/* Ряд другорядних новин — поверх зображення (на телефоні приховано) */}
         {secondary.length > 0 && (
-          <div className="mt-6 grid gap-px overflow-hidden rounded-xl bg-white/10 sm:mt-8 sm:grid-cols-3">
+          <div className="mt-6 hidden gap-px overflow-hidden rounded-xl bg-white/10 sm:mt-8 sm:grid sm:grid-cols-3">
             {secondary.map((a) => (
               <Link
                 key={a.id}

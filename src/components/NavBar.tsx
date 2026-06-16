@@ -10,9 +10,10 @@ export default function NavBar() {
       <div className="h-0.5 bg-brand-600" />
 
       {/* Світло-сіра смуга меню: м'якший перехід від темного хедера, ніж різко-біла.
-          Легка тінь відділяє її від контенту нижче. */}
-      <div className="border-b border-neutral-200 bg-neutral-100 shadow-md">
-        <nav className="overflow-x-auto px-4 sm:px-6">
+          Легка тінь відділяє її від контенту нижче. relative — щоб випадне
+          мобільне меню позиціонувалось відносно смуги. */}
+      <div className="relative border-b border-neutral-200 bg-neutral-100 shadow-md">
+        <nav className="px-4 sm:px-6">
           <NavLinks />
         </nav>
       </div>
