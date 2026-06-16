@@ -106,13 +106,20 @@ npx prettier --write "<files>"
 - Env на Vercel (Production): `DATABASE_URL`, `ADMIN_PASSWORD`, `SESSION_SECRET`. У репо секретів НЕМАЄ
   (лише локальний `.env` у gitignore). ⚠️ Пароль БД містить `@` → у `DATABASE_URL` кодується як `%40`.
 
-### Завантаження фото обкладинок (2026-06-16)
-- В адмінці (форма статті) фото можна вибрати з галереї — вантажиться у **Supabase Storage**,
-  публічний бакет `media` (≤10 МБ, лише зображення). Хелпер — `src/lib/storage.ts`
-  (`server-only`, service-role ключ, обходить RLS). Поле `coverFile` має пріоритет над URL-полем.
+### Завантаження + оптимізація фото обкладинок (2026-06-16)
+- В адмінці фото вибирається з галереї → **Supabase Storage**, публічний бакет `media`.
+- **Стиснення у БРАУЗЕРІ перед відправкою** — `src/components/admin/CoverUpload.tsx`
+  ("use client", canvas → WebP, макс. 1600px). ⚠️ Причина критична: **Vercel ріже тіло
+  запиту до serverless-функції ~4.5 МБ**, тож фото з телефона (5-8 МБ) падало з **413**
+  ще до сервера. `serverActions.bodySizeLimit` тут НЕ допомагає (це нижчий платформенний ліміт).
+- **Серверний sharp** — `src/lib/storage.ts` (`server-only`, service-role ключ, обходить RLS):
+  запобіжник, ще раз rotate/resize/WebP перед заливкою. Поле `coverFile` має пріоритет над URL.
+- ⚠️ `sharp` — нативний модуль; Vercel не включав його у бандл → 500 "Failed to load external
+  module". Фікс у `next.config`: `outputFileTracingIncludes: { "/admin/**":
+  ["node_modules/sharp/**/*", "node_modules/@img/**/*"] }`.
 - Env (Vercel Production + локальний `.env`): `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
-  (формат `sb_secret_…` — СЕКРЕТ, лише сервер). `next.config` підняв `serverActions.bodySizeLimit` до `10mb`.
-- Форма реклами (`AdForm`) поки на URL — той самий хелпер легко підключити (`uploadImage(file, "ads")`).
+  (формат `sb_secret_…` — СЕКРЕТ, лише сервер).
+- Форма реклами (`AdForm`) поки на URL — підключити так само: `CoverUpload` + `uploadImage(file, "ads")`.
 
 ### Нюанси деплою / що можна доробити
 - GitHub-автодеплой НЕ під'єднано (акаунт Vercel без GitHub login-connection) — наразі деплой
