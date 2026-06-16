@@ -1,10 +1,16 @@
 import "server-only";
 import { createClient } from "@supabase/supabase-js";
+import sharp from "sharp";
 
 // Сховище зображень — Supabase Storage, публічний бакет `media`.
 // Завантаження йде ТІЛЬКИ із серверних дій адмінки (під requireAuth),
 // тому використовуємо service-role ключ (обходить RLS) — він серверний секрет.
 const BUCKET = "media";
+
+// Растрові фото перед заливкою стискаємо: авто-поворот за EXIF,
+// зменшення до цього розміру (бік) і конвертація у WebP.
+const MAX_DIMENSION = 1600;
+const WEBP_QUALITY = 80;
 
 function client() {
   const url = process.env.SUPABASE_URL;
@@ -25,16 +31,29 @@ const ALLOWED = new Set([
   "image/avif",
 ]);
 
-function extFor(type: string): string {
-  return (
-    { "image/jpeg": "jpg", "image/svg+xml": "svg" }[type] ??
-    type.split("/")[1] ??
-    "bin"
-  );
+// GIF (анімація) і SVG (вектор) не чіпаємо — стискати немає сенсу / зламає їх.
+const PASSTHROUGH = new Set(["image/gif", "image/svg+xml"]);
+
+type Optimized = { body: Buffer; contentType: string; ext: string };
+
+async function optimize(input: Buffer, type: string): Promise<Optimized> {
+  if (PASSTHROUGH.has(type)) {
+    return { body: input, contentType: type, ext: type.split("/")[1] };
+  }
+  // Авто-поворот за EXIF + зменшення (без збільшення) + WebP.
+  const body = await sharp(input)
+    .rotate()
+    .resize(MAX_DIMENSION, MAX_DIMENSION, {
+      fit: "inside",
+      withoutEnlargement: true,
+    })
+    .webp({ quality: WEBP_QUALITY })
+    .toBuffer();
+  return { body, contentType: "image/webp", ext: "webp" };
 }
 
 /**
- * Завантажує зображення у бакет і повертає публічний URL.
+ * Стискає й завантажує зображення у бакет, повертає публічний URL.
  * Повертає null, якщо файл порожній (поле не заповнили).
  */
 export async function uploadImage(
@@ -47,12 +66,15 @@ export async function uploadImage(
     throw new Error(`Непідтримуваний тип файлу: ${file.type || "невідомо"}.`);
   }
 
-  const path = `${prefix}/${Date.now()}-${crypto.randomUUID()}.${extFor(file.type)}`;
+  const original = Buffer.from(await file.arrayBuffer());
+  const { body, contentType, ext } = await optimize(original, file.type);
+
+  const path = `${prefix}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
   const supabase = client();
 
   const { error } = await supabase.storage
     .from(BUCKET)
-    .upload(path, file, { contentType: file.type, upsert: false });
+    .upload(path, body, { contentType, upsert: false });
   if (error) throw new Error(`Не вдалося завантажити фото: ${error.message}`);
 
   const {

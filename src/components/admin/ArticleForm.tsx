@@ -102,7 +102,8 @@ export default function ArticleForm({
           className="mt-2 block w-full text-sm text-neutral-700 file:mr-3 file:rounded-md file:border-0 file:bg-blue-700 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-blue-800"
         />
         <p className="mt-1 text-xs text-neutral-500">
-          Виберіть фото з галереї (до 10 МБ). Якщо завантажите файл — він
+          Виберіть фото з галереї (до 10 МБ). Воно автоматично стискається
+          (макс. 1600px, WebP), щоб не займало багато місця. Завантажений файл
           замінить URL нижче.
         </p>
 
