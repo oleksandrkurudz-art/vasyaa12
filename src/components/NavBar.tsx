@@ -9,8 +9,9 @@ export default function NavBar() {
       {/* Синя акцент-лінія — тонкий «капелюх» липкої смуги */}
       <div className="h-0.5 bg-brand-600" />
 
-      {/* Світла смуга меню з легкою тінню, що відділяє її від контенту */}
-      <div className="border-b border-neutral-200 bg-white shadow-md">
+      {/* Світло-сіра смуга меню: м'якший перехід від темного хедера, ніж різко-біла.
+          Легка тінь відділяє її від контенту нижче. */}
+      <div className="border-b border-neutral-200 bg-neutral-100 shadow-md">
         <nav className="overflow-x-auto px-4 sm:px-6">
           <NavLinks />
         </nav>
