@@ -47,7 +47,6 @@ export async function saveArticle(formData: FormData) {
     tags: formatTags(str(formData, "tags").split(",")),
     categoryId,
     status,
-    breaking: formData.get("breaking") === "on",
   };
 
   if (id) {

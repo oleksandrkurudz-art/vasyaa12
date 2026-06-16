@@ -56,25 +56,6 @@ export function incrementViews(id: number) {
   });
 }
 
-/** Заголовки для біжучого рядка: спершу термінові, далі — найсвіжіші. */
-export async function getTickerArticles(limit = 6) {
-  const breaking = await prisma.article.findMany({
-    where: { ...PUBLISHED, breaking: true },
-    include: { category: true },
-    orderBy: { publishedAt: "desc" },
-    take: limit,
-  });
-  if (breaking.length >= limit) return breaking;
-
-  const latest = await prisma.article.findMany({
-    where: { ...PUBLISHED, breaking: false },
-    include: { category: true },
-    orderBy: { publishedAt: "desc" },
-    take: limit - breaking.length,
-  });
-  return [...breaking, ...latest];
-}
-
 /** Схожі новини (того ж розділу) для блоку «Читайте також». */
 export function getRelatedArticles(
   article: { id: number; categoryId: number },

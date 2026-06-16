@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Cover from "@/components/Cover";
-import { formatDate, formatViews } from "@/lib/format";
+import { formatDate, formatViews, hasEnoughViews } from "@/lib/format";
 import type { Article, Category } from "@/generated/prisma/client";
 
 type Props = {
@@ -16,7 +16,6 @@ export default function ArticleCard({ article }: Props) {
         href={href}
         className="relative block aspect-[16/10] overflow-hidden bg-neutral-100"
       >
-        {article.breaking && <BreakingBadge />}
         <Cover
           src={article.coverImage}
           alt={article.title}
@@ -51,35 +50,30 @@ function CategoryBadge({ category }: { category: Category }) {
   );
 }
 
-function BreakingBadge() {
-  return (
-    <span className="absolute left-3 top-3 z-10 flex items-center gap-1 rounded-md bg-urgent-600 px-2 py-1 text-xs font-bold uppercase tracking-wide text-white shadow-sm">
-      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />
-      Терміново
-    </span>
-  );
-}
-
 function Meta({ article }: { article: Article }) {
   return (
     <div className="mt-3 flex items-center gap-2 text-xs text-neutral-400">
       <time>{formatDate(article.publishedAt)}</time>
-      <span aria-hidden>·</span>
-      <span className="inline-flex items-center gap-1">
-        <svg
-          width="13"
-          height="13"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          aria-hidden
-        >
-          <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
-          <circle cx="12" cy="12" r="3" />
-        </svg>
-        {formatViews(article.views)}
-      </span>
+      {hasEnoughViews(article.views) && (
+        <>
+          <span aria-hidden>·</span>
+          <span className="inline-flex items-center gap-1">
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              aria-hidden
+            >
+              <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+            {formatViews(article.views)}
+          </span>
+        </>
+      )}
     </div>
   );
 }

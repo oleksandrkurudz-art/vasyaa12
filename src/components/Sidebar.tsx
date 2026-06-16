@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getPopularArticles } from "@/lib/articles";
-import { formatViews } from "@/lib/format";
+import { formatViews, hasEnoughViews } from "@/lib/format";
 
 export default async function Sidebar() {
   const popular = await getPopularArticles(5);
@@ -25,9 +25,11 @@ export default async function Sidebar() {
                 >
                   {a.title}
                 </Link>
-                <p className="mt-1 text-xs text-neutral-400">
-                  {formatViews(a.views)} переглядів
-                </p>
+                {hasEnoughViews(a.views) && (
+                  <p className="mt-1 text-xs text-neutral-400">
+                    {formatViews(a.views)} переглядів
+                  </p>
+                )}
               </div>
             </li>
           ))}

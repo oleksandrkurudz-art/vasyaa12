@@ -61,16 +61,6 @@ export default function ArticleForm({
         </div>
       </div>
 
-      <label className="flex items-center gap-2 text-sm text-neutral-700">
-        <input
-          type="checkbox"
-          name="breaking"
-          defaultChecked={article?.breaking ?? false}
-          className="h-4 w-4"
-        />
-        Термінова новина (червоний бейдж «Терміново»)
-      </label>
-
       <div>
         <label className={labelClass}>
           Slug (необов’язково — згенерується із заголовка)

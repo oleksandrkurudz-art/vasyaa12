@@ -1,5 +1,4 @@
 import Link from "next/link";
-import BreakingTicker from "@/components/BreakingTicker";
 import Logo from "@/components/Logo";
 
 export default function Header() {
@@ -15,9 +14,6 @@ export default function Header() {
 
   return (
     <header className="bg-neutral-900 text-white">
-      {/* Біжучий рядок термінових новин */}
-      <BreakingTicker />
-
       {/* Логотип + сервіси (на всю ширину) */}
       <div className="flex items-center justify-between gap-4 px-4 py-3 sm:px-6">
         <div className="flex min-w-0 items-center gap-3">

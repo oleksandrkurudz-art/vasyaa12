@@ -11,7 +11,7 @@ import {
   getRelatedArticles,
 } from "@/lib/articles";
 import { getContextualAds } from "@/lib/ads";
-import { formatDate, formatViews } from "@/lib/format";
+import { formatDate, formatViews, hasEnoughViews } from "@/lib/format";
 import { parseTags } from "@/lib/tags";
 
 export const dynamic = "force-dynamic";
@@ -52,20 +52,18 @@ export default async function ArticlePage({ params }: Params) {
             >
               {article.category.name}
             </Link>
-            {article.breaking && (
-              <span className="inline-flex items-center gap-1 rounded-md bg-urgent-600 px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-white">
-                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />
-                Терміново
-              </span>
-            )}
           </div>
           <h1 className="font-display mt-2 text-3xl font-black leading-tight tracking-tight text-neutral-900 sm:text-[2.7rem] sm:leading-[1.12]">
             {article.title}
           </h1>
           <div className="mt-3 flex items-center gap-2 text-sm text-neutral-400">
             <time>{formatDate(article.publishedAt)}</time>
-            <span aria-hidden>·</span>
-            <span>{formatViews(article.views + 1)} переглядів</span>
+            {hasEnoughViews(article.views + 1) && (
+              <>
+                <span aria-hidden>·</span>
+                <span>{formatViews(article.views + 1)} переглядів</span>
+              </>
+            )}
           </div>
 
           {article.coverImage && (

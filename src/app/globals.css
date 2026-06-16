@@ -38,19 +38,3 @@ body {
   font-family: var(--font-merriweather), Georgia, serif;
   letter-spacing: -0.01em;
 }
-
-/* Біжучий рядок термінових новин */
-@keyframes ticker {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
-}
-.animate-ticker {
-  animation: ticker 40s linear infinite;
-}
-.ticker-pause:hover .animate-ticker {
-  animation-play-state: paused;
-}

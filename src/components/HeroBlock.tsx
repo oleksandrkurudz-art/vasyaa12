@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Cover from "@/components/Cover";
-import { formatDate, formatViews } from "@/lib/format";
+import { formatDate, formatViews, hasEnoughViews } from "@/lib/format";
 import type { Article, Category } from "@/generated/prisma/client";
 
 type ArticleWithCategory = Article & { category: Category };
@@ -43,11 +43,15 @@ export default function HeroBlock({
 
           <div className="mt-3 flex items-center gap-3 text-xs text-white/70">
             <time>{formatDate(featured.publishedAt)}</time>
-            <span aria-hidden>·</span>
-            <span className="inline-flex items-center gap-1">
-              <EyeIcon />
-              {formatViews(featured.views)}
-            </span>
+            {hasEnoughViews(featured.views) && (
+              <>
+                <span aria-hidden>·</span>
+                <span className="inline-flex items-center gap-1">
+                  <EyeIcon />
+                  {formatViews(featured.views)}
+                </span>
+              </>
+            )}
           </div>
 
           <h2 className="font-display mt-2 text-3xl font-black leading-tight text-white transition-colors group-hover:text-brand-200 sm:text-5xl sm:leading-[1.08]">
