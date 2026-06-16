@@ -96,12 +96,21 @@ npx prettier --write "<files>"
 - Дизайн перероблено **під стиль ТСН** (див. розділ 6).
 - Міграція на `next/image` (компонент `Cover`, blur-плейсхолдери, lazy-loading).
 
-### ⏳ Лишилось (Фаза 6 — Деплой на Vercel) — НЕ розпочато
-- Перемкнути `provider` у schema на `postgresql`.
-- Замінити driver-адаптер на `@prisma/adapter-pg` / `-neon`.
-- Налаштувати env-змінні на Vercel, опублікувати.
-- Потребує акаунтів користувача (Vercel / Neon).
-- Доступні MCP-інструменти Vercel (`deploy_to_vercel`, `get_deployment` тощо) — через ToolSearch.
+### ✅ Фаза 6 — Деплой (2026-06-16): ЗРОБЛЕНО
+- **Живий сайт: https://vasyaa12.vercel.app** (Vercel-проєкт `vasyaa12`).
+- **Репозиторій: https://github.com/oleksandrkurudz-art/vasyaa12** (гілка `main`).
+- Схема: `provider = postgresql`, рантайм-адаптер `@prisma/adapter-pg` (`pg`). build = `prisma generate && next build`.
+- **БД — Supabase Postgres** (не Neon): проєкт `gromada_people`, ref `pruswnyuxxaqmxrchhzu`, eu-west-3.
+  Підключення — «Session pooler» (порт 5432, IPv4). Схему й демо-дані накочено через **Supabase MCP**
+  (`apply_migration` + `execute_sql`), бо пароль БД через MCP не передається.
+- Env на Vercel (Production): `DATABASE_URL`, `ADMIN_PASSWORD`, `SESSION_SECRET`. У репо секретів НЕМАЄ
+  (лише локальний `.env` у gitignore). ⚠️ Пароль БД містить `@` → у `DATABASE_URL` кодується як `%40`.
+
+### Нюанси деплою / що можна доробити
+- GitHub-автодеплой НЕ під'єднано (акаунт Vercel без GitHub login-connection) — наразі деплой
+  вручну: `vercel deploy --prod`. Щоб увімкнути авто-деплой на push: під'єднати GitHub у налаштуваннях Vercel.
+- Схемою керуємо через Supabase MCP/dashboard (build не робить `migrate deploy`). Для нової міграції:
+  `npx prisma migrate diff --from-empty/--from-schema ... --script` → застосувати через MCP `apply_migration`.
 
 ### Можливі наступні кроки (пропонувалися, не обрані)
 Живі курси/погода (API НБУ), спеціалізовані розділи (Афіша з датами, Вакансії…),
@@ -189,4 +198,4 @@ npx prettier --write "<files>"
 
 ---
 
-_Останнє оновлення: 2026-06-15. Останні зміни — full-bleed герой ТСН-стилю + темна шапка._
+_Останнє оновлення: 2026-06-16. Останні зміни — липка навігація (`NavBar.tsx`), міграція на Postgres (Supabase) + деплой на Vercel (https://vasyaa12.vercel.app)._
