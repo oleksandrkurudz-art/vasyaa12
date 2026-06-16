@@ -1,7 +1,9 @@
 import Link from "next/link";
 import Logo from "@/components/Logo";
+import { getRates, formatRate } from "@/lib/rates";
 
-export default function Header() {
+export default async function Header() {
+  const rates = await getRates();
   // Обчислюємо при рендері, щоб дата не «застрягала» на момент старту сервера.
   const now = new Date();
   const weekday = new Intl.DateTimeFormat("uk-UA", { weekday: "short" }).format(
@@ -29,11 +31,15 @@ export default function Header() {
           <div className="hidden items-center gap-2 sm:flex">
             <span className="flex items-center gap-1.5 rounded-md bg-white/10 px-2 py-1 text-xs">
               <span aria-hidden>🇺🇸</span>
-              <span className="font-semibold text-white">41.30</span>
+              <span className="font-semibold text-white">
+                {formatRate(rates.usd)}
+              </span>
             </span>
             <span className="flex items-center gap-1.5 rounded-md bg-white/10 px-2 py-1 text-xs">
               <span aria-hidden>🇪🇺</span>
-              <span className="font-semibold text-white">44.85</span>
+              <span className="font-semibold text-white">
+                {formatRate(rates.eur)}
+              </span>
             </span>
           </div>
 

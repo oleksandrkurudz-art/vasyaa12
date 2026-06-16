@@ -1,9 +1,16 @@
 import Link from "next/link";
 import { getPopularArticles } from "@/lib/articles";
 import { formatViews, hasEnoughViews } from "@/lib/format";
+import { getRates, formatRateUk } from "@/lib/rates";
+import { getWeather } from "@/lib/weather";
 
 export default async function Sidebar() {
-  const popular = await getPopularArticles(5);
+  // Усі три джерела незалежні — тягнемо паралельно.
+  const [popular, weather, rates] = await Promise.all([
+    getPopularArticles(5),
+    getWeather(),
+    getRates(),
+  ]);
 
   return (
     <aside className="space-y-6">
@@ -40,22 +47,30 @@ export default async function Sidebar() {
       <section className="rounded-xl border border-neutral-200 bg-gradient-to-br from-brand-600 to-brand-800 p-5 text-white">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-brand-100">Погода в громаді</p>
-            <p className="mt-1 text-4xl font-black">+18°</p>
-            <p className="text-sm text-brand-100">Хмарно з проясненнями</p>
+            <p className="text-sm font-medium text-brand-100">
+              Погода в громаді
+            </p>
+            <p className="mt-1 text-4xl font-black">{fmtTemp(weather.temp)}</p>
+            <p className="text-sm text-brand-100">{weather.description}</p>
           </div>
           <span className="text-5xl" aria-hidden>
-            ⛅
+            {weather.emoji}
           </span>
         </div>
-        <div className="mt-4 flex justify-between border-t border-white/20 pt-3 text-xs text-brand-100">
-          <span>Ранок +12°</span>
-          <span>День +18°</span>
-          <span>Вечір +14°</span>
-        </div>
+        {(weather.morning ?? weather.day ?? weather.evening) !== null && (
+          <div className="mt-4 flex justify-between border-t border-white/20 pt-3 text-xs text-brand-100">
+            {weather.morning !== null && (
+              <span>Ранок {fmtTemp(weather.morning)}</span>
+            )}
+            {weather.day !== null && <span>День {fmtTemp(weather.day)}</span>}
+            {weather.evening !== null && (
+              <span>Вечір {fmtTemp(weather.evening)}</span>
+            )}
+          </div>
+        )}
       </section>
 
-      {/* Курси валют */}
+      {/* Курси валют — офіційний курс НБУ */}
       <section className="rounded-xl border border-neutral-200 bg-white p-5">
         <h2 className="font-display text-lg font-bold text-neutral-900">
           Курси валют
@@ -64,22 +79,31 @@ export default async function Sidebar() {
           <tbody className="divide-y divide-neutral-100">
             <tr>
               <td className="py-2 font-semibold text-neutral-700">USD</td>
-              <td className="py-2 text-right text-neutral-500">купівля 41,20</td>
+              <td className="py-2 text-right text-neutral-500">$1</td>
               <td className="py-2 text-right font-medium text-neutral-900">
-                продаж 41,75
+                {formatRateUk(rates.usd)} ₴
               </td>
             </tr>
             <tr>
               <td className="py-2 font-semibold text-neutral-700">EUR</td>
-              <td className="py-2 text-right text-neutral-500">купівля 44,60</td>
+              <td className="py-2 text-right text-neutral-500">€1</td>
               <td className="py-2 text-right font-medium text-neutral-900">
-                продаж 45,30
+                {formatRateUk(rates.eur)} ₴
               </td>
             </tr>
           </tbody>
         </table>
-        <p className="mt-2 text-xs text-neutral-400">Дані оновлюються щодня</p>
+        <p className="mt-2 text-xs text-neutral-400">
+          {rates.fallback ? "Орієнтовні значення" : "Офіційний курс НБУ"}
+        </p>
       </section>
     </aside>
   );
+}
+
+// Температура зі знаком: 12 → «+12°», -3 → «−3°», 0 → «0°».
+function fmtTemp(t: number): string {
+  if (t > 0) return `+${t}°`;
+  if (t < 0) return `−${Math.abs(t)}°`;
+  return "0°";
 }

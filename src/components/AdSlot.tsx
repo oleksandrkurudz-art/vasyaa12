@@ -10,7 +10,7 @@ export default function AdSlot({ ads }: { ads: AdWithAdvertiser[] }) {
 
   return (
     <aside aria-label="Реклама" className="space-y-4">
-      <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
+      <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
         Реклама
       </p>
       {ads.map((ad) => (
@@ -28,6 +28,10 @@ export default function AdSlot({ ads }: { ads: AdWithAdvertiser[] }) {
               sizes="(max-width: 1024px) 100vw, 300px"
               imgClassName="object-cover transition-transform duration-300 group-hover:scale-105"
             />
+            {/* Бейдж прозорості: кожен банер окремо позначено як рекламу. */}
+            <span className="absolute left-2 top-2 rounded bg-black/65 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white backdrop-blur-sm">
+              Реклама
+            </span>
           </div>
           <div className="p-3">
             <p className="text-sm font-semibold text-neutral-900">{ad.title}</p>

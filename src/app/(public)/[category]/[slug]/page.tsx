@@ -11,6 +11,7 @@ import {
   getRelatedArticles,
 } from "@/lib/articles";
 import { getContextualAds } from "@/lib/ads";
+import { SITE_NAME, SITE_URL } from "@/lib/categories";
 import { formatDate, formatViews, hasEnoughViews } from "@/lib/format";
 import { parseTags } from "@/lib/tags";
 
@@ -22,7 +23,35 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
   const article = await getArticleBySlug(slug);
   if (!article) return { title: "Новину не знайдено" };
-  return { title: article.title, description: article.excerpt };
+
+  const url = `/${article.category.slug}/${article.slug}`;
+  // Картинка обкладинки — для прев'ю в Telegram/Viber/Facebook при поширенні.
+  const images = article.coverImage ? [article.coverImage] : undefined;
+
+  return {
+    title: article.title,
+    description: article.excerpt,
+    alternates: { canonical: url },
+    openGraph: {
+      type: "article",
+      // siteName/locale тут повторюються свідомо: Next.js не зливає openGraph
+      // глибоко — метадані сторінки повністю перекривають батьківські.
+      siteName: SITE_NAME,
+      locale: "uk_UA",
+      title: article.title,
+      description: article.excerpt,
+      url,
+      images,
+      publishedTime: article.publishedAt?.toISOString(),
+      section: article.category.name,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: article.title,
+      description: article.excerpt,
+      images,
+    },
+  };
 }
 
 export default async function ArticlePage({ params }: Params) {
@@ -40,8 +69,28 @@ export default async function ArticlePage({ params }: Params) {
   const tags = parseTags(article.tags);
   const paragraphs = article.body.split(/\n{2,}/).filter((p) => p.trim());
 
+  const canonical = `${SITE_URL}/${article.category.slug}/${article.slug}`;
+  // Структуровані дані для Google (Google News, багаті сніпети).
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    headline: article.title,
+    description: article.excerpt,
+    image: article.coverImage ? [article.coverImage] : undefined,
+    datePublished: article.publishedAt?.toISOString(),
+    dateModified: article.updatedAt.toISOString(),
+    articleSection: article.category.name,
+    url: canonical,
+    mainEntityOfPage: canonical,
+    publisher: { "@type": "Organization", name: SITE_NAME },
+  };
+
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-6">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_300px]">
         {/* Стаття */}
         <article className="min-w-0">

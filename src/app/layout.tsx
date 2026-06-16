@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Merriweather } from "next/font/google";
 import "./globals.css";
-import { SITE_NAME, SITE_SLOGAN } from "@/lib/categories";
+import { SITE_NAME, SITE_SLOGAN, SITE_URL } from "@/lib/categories";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -15,11 +15,27 @@ const merriweather = Merriweather({
 });
 
 export const metadata: Metadata = {
+  // metadataBase робить відносні URL (canonical, og:image) абсолютними.
+  metadataBase: new URL(SITE_URL),
   title: {
     default: `${SITE_NAME} — ${SITE_SLOGAN}`,
     template: `%s — ${SITE_NAME}`,
   },
   description: SITE_SLOGAN,
+  // Дефолтні OG/Twitter для всього сайту; сторінки статей їх доповнюють/перекривають.
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    locale: "uk_UA",
+    title: `${SITE_NAME} — ${SITE_SLOGAN}`,
+    description: SITE_SLOGAN,
+    url: SITE_URL,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${SITE_NAME} — ${SITE_SLOGAN}`,
+    description: SITE_SLOGAN,
+  },
 };
 
 export default function RootLayout({

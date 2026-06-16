@@ -14,8 +14,13 @@ export default function NavLinks() {
 
   return (
     <>
-      {/* Десктоп — горизонтальне меню */}
-      <ul className="hidden min-w-max gap-2 overflow-x-auto sm:flex sm:gap-4">
+      {/* Десктоп/планшет — горизонтальне меню.
+          На проміжних ширинах (планшети, малі ноутбуки) 7 довгих назв не
+          вміщаються — меню скролиться ГОРИЗОНТАЛЬНО всередині смуги
+          (overflow-x-auto), а не розтягує всю сторінку. Тому БЕЗ min-w-max:
+          саме воно раніше робило <ul> ширшим за екран і давало горизонтальний
+          скрол усієї сторінки. Смугу прокрутки ховаємо — лишається свайп/тач. */}
+      <ul className="hidden gap-2 overflow-x-auto sm:flex sm:gap-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {CATEGORIES.map((c) => (
           <li key={c.slug}>
             <Link
