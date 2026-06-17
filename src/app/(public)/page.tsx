@@ -1,5 +1,5 @@
 import Link from "next/link";
-import ArticleCard from "@/components/ArticleCard";
+import ArticleCard, { LeadArticleCard } from "@/components/ArticleCard";
 import HeroBlock from "@/components/HeroBlock";
 import Sidebar from "@/components/Sidebar";
 import { getLatestArticles } from "@/lib/articles";
@@ -29,6 +29,8 @@ export default async function Home() {
   const [featured, ...others] = articles;
   const secondary = others.slice(0, 3);
   const rest = others.slice(3);
+  // Перша з решти — велика картка-«лідер», далі — звичайна сітка (ритм).
+  const [lead, ...tail] = rest;
 
   return (
     <>
@@ -49,11 +51,14 @@ export default async function Home() {
                     Останні новини
                   </h2>
                 </div>
-                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                  {rest.map((article) => (
-                    <ArticleCard key={article.id} article={article} />
-                  ))}
-                </div>
+                {lead && <LeadArticleCard article={lead} />}
+                {tail.length > 0 && (
+                  <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2">
+                    {tail.map((article) => (
+                      <ArticleCard key={article.id} article={article} />
+                    ))}
+                  </div>
+                )}
               </section>
             )}
           </div>

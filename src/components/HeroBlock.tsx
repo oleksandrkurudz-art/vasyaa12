@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Cover from "@/components/Cover";
+import { categoryStyle } from "@/lib/categories";
 import { formatDate, formatViews, hasEnoughViews } from "@/lib/format";
 import type { Article, Category } from "@/generated/prisma/client";
 
@@ -36,7 +37,9 @@ export default function HeroBlock({
         {/* Головна новина */}
         <Link href={href} className="group block max-w-3xl">
           <div className="flex items-center gap-2">
-            <span className="rounded bg-brand-600 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-white">
+            <span
+              className={`rounded px-2.5 py-1 text-xs font-bold uppercase tracking-wide ${categoryStyle(featured.category.slug).solid}`}
+            >
               {featured.category.name}
             </span>
           </div>
@@ -80,7 +83,9 @@ export default function HeroBlock({
                   />
                 </div>
                 <div className="min-w-0">
-                  <span className="text-[11px] font-semibold uppercase tracking-wide text-brand-300">
+                  <span
+                    className={`text-[11px] font-semibold uppercase tracking-wide ${categoryStyle(a.category.slug).onDark}`}
+                  >
                     {a.category.name}
                   </span>
                   <p className="mt-1 line-clamp-3 text-sm font-semibold leading-snug text-white transition-colors group-hover:text-brand-200">

@@ -11,7 +11,7 @@ import {
   getRelatedArticles,
 } from "@/lib/articles";
 import { getContextualAds } from "@/lib/ads";
-import { SITE_NAME, SITE_URL } from "@/lib/categories";
+import { SITE_NAME, SITE_URL, categoryStyle } from "@/lib/categories";
 import { formatDate, formatViews, hasEnoughViews } from "@/lib/format";
 import { parseTags } from "@/lib/tags";
 
@@ -97,7 +97,7 @@ export default async function ArticlePage({ params }: Params) {
           <div className="flex items-center gap-3">
             <Link
               href={`/${article.category.slug}`}
-              className="text-sm font-semibold uppercase tracking-wider text-brand-700 hover:underline"
+              className={`text-sm font-semibold uppercase tracking-wider hover:underline ${categoryStyle(article.category.slug).text}`}
             >
               {article.category.name}
             </Link>

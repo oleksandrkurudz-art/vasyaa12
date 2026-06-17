@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CATEGORIES } from "@/lib/categories";
+import { CATEGORIES, categoryStyle } from "@/lib/categories";
 
 export default function NavLinks() {
   const pathname = usePathname();
@@ -27,7 +27,7 @@ export default function NavLinks() {
               href={`/${c.slug}`}
               className={`block whitespace-nowrap border-b-[3px] px-4 py-3.5 text-sm font-semibold transition-all duration-200 ${
                 isActive(c.slug)
-                  ? "border-brand-600 text-brand-700"
+                  ? `${categoryStyle(c.slug).border} ${categoryStyle(c.slug).text}`
                   : "border-transparent text-neutral-600 hover:border-brand-300 hover:text-brand-700"
               }`}
             >
@@ -63,7 +63,7 @@ export default function NavLinks() {
                     onClick={() => setOpen(false)}
                     className={`block border-l-[3px] py-2.5 pl-3 text-sm font-semibold transition-colors ${
                       isActive(c.slug)
-                        ? "border-brand-600 bg-brand-50 text-brand-700"
+                        ? `${categoryStyle(c.slug).border} ${categoryStyle(c.slug).badge}`
                         : "border-transparent text-neutral-700 hover:bg-neutral-200/60"
                     }`}
                   >

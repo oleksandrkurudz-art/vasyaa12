@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Cover from "@/components/Cover";
+import { categoryStyle } from "@/lib/categories";
 import { formatDate, formatViews, hasEnoughViews } from "@/lib/format";
 import type { Article, Category } from "@/generated/prisma/client";
 
@@ -26,7 +27,10 @@ export default function ArticleCard({ article }: Props) {
       <div className="flex flex-1 flex-col p-4">
         <CategoryBadge category={article.category} />
         <h3 className="font-display mt-2 text-lg font-bold leading-snug text-neutral-900">
-          <Link href={href} className="transition-colors group-hover:text-brand-700">
+          <Link
+            href={href}
+            className="transition-colors group-hover:text-brand-700"
+          >
             {article.title}
           </Link>
         </h3>
@@ -39,11 +43,51 @@ export default function ArticleCard({ article }: Props) {
   );
 }
 
+/**
+ * Велика горизонтальна картка-«лідер» для верху стрічки: створює ритм,
+ * щоб головна не виглядала однорідною сіткою. Ділить розмітку (бейдж/мета)
+ * зі звичайною карткою.
+ */
+export function LeadArticleCard({ article }: Props) {
+  const href = `/${article.category.slug}/${article.slug}`;
+
+  return (
+    <article className="group grid overflow-hidden rounded-xl border border-neutral-200 bg-white transition-all duration-200 hover:shadow-lg sm:grid-cols-2">
+      <Link
+        href={href}
+        className="relative block aspect-[16/10] overflow-hidden bg-neutral-100 sm:aspect-auto sm:min-h-[260px]"
+      >
+        <Cover
+          src={article.coverImage}
+          alt={article.title}
+          sizes="(max-width: 640px) 100vw, 560px"
+          imgClassName="object-cover transition-transform duration-500 group-hover:scale-105"
+        />
+      </Link>
+      <div className="flex flex-col justify-center p-5 sm:p-7">
+        <CategoryBadge category={article.category} />
+        <h3 className="font-display mt-3 text-2xl font-black leading-tight text-neutral-900 sm:text-[1.7rem]">
+          <Link
+            href={href}
+            className="transition-colors group-hover:text-brand-700"
+          >
+            {article.title}
+          </Link>
+        </h3>
+        <p className="mt-3 line-clamp-3 text-sm text-neutral-600">
+          {article.excerpt}
+        </p>
+        <Meta article={article} />
+      </div>
+    </article>
+  );
+}
+
 function CategoryBadge({ category }: { category: Category }) {
   return (
     <Link
       href={`/${category.slug}`}
-      className="w-fit rounded-full bg-brand-50 px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-brand-700 transition-colors hover:bg-brand-100"
+      className={`w-fit rounded-full px-2.5 py-1 text-xs font-semibold uppercase tracking-wide transition-colors ${categoryStyle(category.slug).badge}`}
     >
       {category.name}
     </Link>

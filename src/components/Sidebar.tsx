@@ -43,22 +43,24 @@ export default async function Sidebar() {
         </ol>
       </section>
 
-      {/* Погода */}
-      <section className="rounded-xl border border-neutral-200 bg-gradient-to-br from-brand-600 to-brand-800 p-5 text-white">
+      {/* Погода — спокійна біла картка, щоб не перетягувати увагу з контенту */}
+      <section className="rounded-xl border border-neutral-200 bg-white p-5">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-brand-100">
+            <p className="text-sm font-medium text-neutral-500">
               Погода в громаді
             </p>
-            <p className="mt-1 text-4xl font-black">{fmtTemp(weather.temp)}</p>
-            <p className="text-sm text-brand-100">{weather.description}</p>
+            <p className="mt-1 text-4xl font-black text-neutral-900">
+              {fmtTemp(weather.temp)}
+            </p>
+            <p className="text-sm text-neutral-600">{weather.description}</p>
           </div>
           <span className="text-5xl" aria-hidden>
             {weather.emoji}
           </span>
         </div>
         {(weather.morning ?? weather.day ?? weather.evening) !== null && (
-          <div className="mt-4 flex justify-between border-t border-white/20 pt-3 text-xs text-brand-100">
+          <div className="mt-4 flex justify-between border-t border-neutral-100 pt-3 text-xs text-neutral-500">
             {weather.morning !== null && (
               <span>Ранок {fmtTemp(weather.morning)}</span>
             )}
