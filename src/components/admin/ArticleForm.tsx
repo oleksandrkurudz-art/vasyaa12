@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { saveArticle } from "@/app/admin/actions";
 import CoverUpload from "@/components/admin/CoverUpload";
-import type { Article, Category } from "@/generated/prisma/client";
+import type { Article, Category, Community } from "@/generated/prisma/client";
 
 const inputClass =
   "w-full rounded-md border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-blue-500";
@@ -10,9 +10,11 @@ const labelClass = "block text-sm font-medium text-neutral-700";
 export default function ArticleForm({
   article,
   categories,
+  communities,
 }: {
   article?: Article;
   categories: Category[];
+  communities: Community[];
 }) {
   return (
     <form
@@ -49,6 +51,21 @@ export default function ArticleForm({
           </select>
         </div>
         <div>
+          <label className={labelClass}>Громада</label>
+          <select
+            name="communityId"
+            defaultValue={article?.communityId ?? ""}
+            className={`mt-1 ${inputClass}`}
+          >
+            <option value="">— Весь район —</option>
+            {communities.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
           <label className={labelClass}>Статус</label>
           <select
             name="status"
@@ -60,6 +77,18 @@ export default function ArticleForm({
           </select>
         </div>
       </div>
+
+      <label className="flex items-center gap-2">
+        <input
+          type="checkbox"
+          name="breaking"
+          defaultChecked={article?.breaking ?? false}
+          className="h-4 w-4 rounded border-neutral-300 text-red-600 focus:ring-red-500"
+        />
+        <span className="text-sm font-medium text-neutral-700">
+          Термінова новина — червона стрічка «Терміново» зверху сайту
+        </span>
+      </label>
 
       <div>
         <label className={labelClass}>

@@ -1,9 +1,16 @@
 import Link from "next/link";
 import Logo from "@/components/Logo";
+import CommunitySwitcher from "@/components/CommunitySwitcher";
 import { getRates, formatRate } from "@/lib/rates";
+import { prisma } from "@/lib/db";
+import { getActiveCommunity } from "@/lib/community-filter";
 
 export default async function Header() {
-  const rates = await getRates();
+  const [rates, communities, activeCommunity] = await Promise.all([
+    getRates(),
+    prisma.community.findMany({ orderBy: { order: "asc" } }),
+    getActiveCommunity(),
+  ]);
   // Обчислюємо при рендері, щоб дата не «застрягала» на момент старту сервера.
   const now = new Date();
   const weekday = new Intl.DateTimeFormat("uk-UA", { weekday: "short" }).format(
@@ -27,6 +34,12 @@ export default async function Header() {
         </div>
 
         <div className="flex items-center gap-3">
+          {/* Перемикач громади — видно на всіх ширинах */}
+          <CommunitySwitcher
+            communities={communities}
+            activeSlug={activeCommunity?.slug ?? null}
+          />
+
           {/* Курси валют — маленькі картки з прапорами */}
           <div className="hidden items-center gap-2 sm:flex">
             <span className="flex items-center gap-1.5 rounded-md bg-white/10 px-2 py-1 text-xs">

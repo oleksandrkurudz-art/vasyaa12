@@ -13,6 +13,8 @@ export const CATEGORIES: CategoryDef[] = [
   { slug: "vakansii", name: "Вакансії" },
   { slug: "ogoloshennya", name: "Оголошення" },
   { slug: "foto", name: "Фотогалерея" },
+  { slug: "lyudy", name: "Люди громади" },
+  { slug: "nekrolohy", name: "Некрологи та співчуття" },
 ];
 
 // Колірне кодування розділів. Класи — літеральні рядки (інакше сканер Tailwind
@@ -79,6 +81,20 @@ export const CATEGORY_STYLES: Record<string, CategoryStyle> = {
     onDark: "text-green-300",
     text: "text-green-700",
     border: "border-green-600",
+  },
+  lyudy: {
+    badge: "bg-sky-50 text-sky-700 hover:bg-sky-100",
+    solid: "bg-sky-600 text-white",
+    onDark: "text-sky-300",
+    text: "text-sky-700",
+    border: "border-sky-600",
+  },
+  nekrolohy: {
+    badge: "bg-slate-100 text-slate-700 hover:bg-slate-200",
+    solid: "bg-slate-600 text-white",
+    onDark: "text-slate-300",
+    text: "text-slate-700",
+    border: "border-slate-600",
   },
 };
 

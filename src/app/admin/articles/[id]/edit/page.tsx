@@ -13,9 +13,10 @@ export default async function EditArticle({
 }) {
   await requireAuth();
   const { id } = await params;
-  const [article, categories] = await Promise.all([
+  const [article, categories, communities] = await Promise.all([
     prisma.article.findUnique({ where: { id: Number(id) } }),
     prisma.category.findMany({ orderBy: { order: "asc" } }),
+    prisma.community.findMany({ orderBy: { order: "asc" } }),
   ]);
 
   if (!article) notFound();
@@ -25,7 +26,7 @@ export default async function EditArticle({
       <h1 className="mb-6 text-2xl font-bold text-neutral-900">
         Редагування новини
       </h1>
-      <ArticleForm article={article} categories={categories} />
+      <ArticleForm article={article} categories={categories} communities={communities} />
     </div>
   );
 }

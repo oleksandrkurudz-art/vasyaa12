@@ -20,6 +20,16 @@ model Category {
   ads      Ad[]
 }
 
+// Громада (Долинська, Брошнів-Осадська, Вигодська, Перегінська, Калуська).
+// Новина без громади (communityId = null) вважається загальнорайонною.
+model Community {
+  id       Int       @id @default(autoincrement())
+  slug     String    @unique
+  name     String
+  order    Int       @default(0)
+  articles Article[]
+}
+
 // Новина / стаття
 model Article {
   id          Int       @id @default(autoincrement())
@@ -38,9 +48,13 @@ model Article {
   updatedAt   DateTime  @updatedAt
   categoryId  Int
   category    Category  @relation(fields: [categoryId], references: [id])
+  // Громада новини; null = загальнорайонна (видно в усіх громадах).
+  communityId Int?
+  community   Community? @relation(fields: [communityId], references: [id])
 
   @@index([status, publishedAt])
   @@index([categoryId])
+  @@index([communityId])
 }
 
 // Рекламодавець (місцевий бізнес)

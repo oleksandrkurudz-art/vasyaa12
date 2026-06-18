@@ -1,22 +1,35 @@
 import { cache } from "react";
 import { prisma } from "@/lib/db";
+import { getActiveCommunity, communityFilter } from "@/lib/community-filter";
 
 const PUBLISHED = { status: "published" as const };
 
-/** Останні опубліковані новини (для головної). */
-export function getLatestArticles(limit = 12) {
+/** Останні опубліковані новини (для головної), відфільтровані за обраною громадою. */
+export async function getLatestArticles(limit = 12) {
+  const community = await getActiveCommunity();
   return prisma.article.findMany({
-    where: PUBLISHED,
+    where: { ...PUBLISHED, ...communityFilter(community?.id) },
     include: { category: true },
     orderBy: { publishedAt: "desc" },
     take: limit,
   });
 }
 
-/** Найпопулярніші новини за переглядами (для бічної колонки). */
-export function getPopularArticles(limit = 5) {
+/** Термінові опубліковані новини (для червоної стрічки зверху). */
+export function getBreakingArticles(limit = 3) {
   return prisma.article.findMany({
-    where: PUBLISHED,
+    where: { ...PUBLISHED, breaking: true },
+    include: { category: true },
+    orderBy: { publishedAt: "desc" },
+    take: limit,
+  });
+}
+
+/** Найпопулярніші новини за переглядами (для бічної колонки), за обраною громадою. */
+export async function getPopularArticles(limit = 5) {
+  const community = await getActiveCommunity();
+  return prisma.article.findMany({
+    where: { ...PUBLISHED, ...communityFilter(community?.id) },
     include: { category: true },
     orderBy: { views: "desc" },
     take: limit,
@@ -31,8 +44,9 @@ export const getArticlesByCategory = cache(async (slug: string) => {
   const category = await prisma.category.findUnique({ where: { slug } });
   if (!category) return null;
 
+  const community = await getActiveCommunity();
   const articles = await prisma.article.findMany({
-    where: { ...PUBLISHED, categoryId: category.id },
+    where: { ...PUBLISHED, categoryId: category.id, ...communityFilter(community?.id) },
     include: { category: true },
     orderBy: { publishedAt: "desc" },
   });

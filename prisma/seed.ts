@@ -2,6 +2,7 @@ import "dotenv/config";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { CATEGORIES } from "../src/lib/categories";
+import { COMMUNITIES } from "../src/lib/communities";
 
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL,
@@ -20,6 +21,7 @@ async function main() {
   await prisma.advertiser.deleteMany();
   await prisma.article.deleteMany();
   await prisma.category.deleteMany();
+  await prisma.community.deleteMany();
 
   // 1) Розділи
   const categories: Record<string, number> = {};
@@ -29,6 +31,16 @@ async function main() {
       data: { slug: c.slug, name: c.name, order: i },
     });
     categories[c.slug] = created.id;
+  }
+
+  // 1b) Громади
+  const communities: Record<string, number> = {};
+  for (let i = 0; i < COMMUNITIES.length; i++) {
+    const c = COMMUNITIES[i];
+    const created = await prisma.community.create({
+      data: { slug: c.slug, name: c.name, order: i },
+    });
+    communities[c.slug] = created.id;
   }
 
   // 2) Рекламодавці + банери
@@ -108,6 +120,7 @@ async function main() {
   const articles: Array<{
     slug: string;
     category: string;
+    community?: string; // slug громади; без поля = загальнорайонна
     title: string;
     excerpt: string;
     tags: string;
@@ -119,6 +132,7 @@ async function main() {
     {
       slug: "kapremont-tsentralnoyi-dorohy",
       category: "novyny",
+      community: "broshniv-osadska",
       title: "У громаді стартував капітальний ремонт центральної дороги",
       excerpt:
         "Роботи триватимуть три місяці. Дорожники оновлять покриття, тротуари та зливову каналізацію.",
@@ -141,6 +155,7 @@ async function main() {
     {
       slug: "byudzhet-hromady",
       category: "polityka",
+      community: "dolynska",
       title: "Рада ухвалила бюджет громади на наступний рік",
       excerpt:
         "Найбільші статті видатків — освіта, дороги та медицина. Депутати підтримали проєкт одноголосно.",
@@ -204,6 +219,7 @@ async function main() {
         views: a.views ?? 200 + Math.floor(Math.random() * 800),
         publishedAt: new Date(now - a.days * day),
         categoryId: categories[a.category],
+        communityId: a.community ? communities[a.community] : null,
       },
     });
   }

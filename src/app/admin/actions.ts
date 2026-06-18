@@ -34,6 +34,8 @@ export async function saveArticle(formData: FormData) {
   const categoryId = Number(formData.get("categoryId"));
   const customSlug = str(formData, "slug");
   const status = str(formData, "status") === "published" ? "published" : "draft";
+  // Громада новини; порожнє значення = загальнорайонна (communityId = null).
+  const communityId = Number(formData.get("communityId")) || null;
 
   // Завантажене фото має пріоритет; інакше — значення поля «URL обкладинки».
   const uploaded = await uploadImage(formData.get("coverFile") as File | null);
@@ -46,6 +48,8 @@ export async function saveArticle(formData: FormData) {
     coverImage,
     tags: formatTags(str(formData, "tags").split(",")),
     categoryId,
+    communityId,
+    breaking: formData.get("breaking") === "on",
     status,
   };
 

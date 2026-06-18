@@ -7,12 +7,15 @@ export const metadata = { title: "Нова новина · Адмінка" };
 
 export default async function NewArticle() {
   await requireAuth();
-  const categories = await prisma.category.findMany({ orderBy: { order: "asc" } });
+  const [categories, communities] = await Promise.all([
+    prisma.category.findMany({ orderBy: { order: "asc" } }),
+    prisma.community.findMany({ orderBy: { order: "asc" } }),
+  ]);
 
   return (
     <div className="mx-auto max-w-2xl">
       <h1 className="mb-6 text-2xl font-bold text-neutral-900">Нова новина</h1>
-      <ArticleForm categories={categories} />
+      <ArticleForm categories={categories} communities={communities} />
     </div>
   );
 }
