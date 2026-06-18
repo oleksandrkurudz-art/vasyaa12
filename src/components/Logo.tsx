@@ -15,13 +15,13 @@ export default function Logo({
   const letter = md ? "text-2xl" : "text-lg";
   const accent = md ? "inset-x-1.5 bottom-[3px] h-[3px]" : "inset-x-1 bottom-[2px] h-[2px]";
   const name = md
-    ? "text-2xl text-white sm:text-3xl"
+    ? "text-xl text-white sm:text-3xl"
     : "text-lg text-neutral-900";
 
   return (
-    <Link href="/" className="flex shrink-0 items-center gap-2.5">
+    <Link href="/" className="flex min-w-0 items-center gap-2.5">
       <span
-        className={`relative inline-flex items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 shadow-sm ring-1 ring-inset ring-white/20 ${box}`}
+        className={`relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 shadow-sm ring-1 ring-inset ring-white/20 ${box}`}
       >
         <span
           className={`font-display ${letter} font-black leading-none text-white`}
@@ -30,7 +30,7 @@ export default function Logo({
         </span>
         <span className={`absolute rounded-full bg-white/55 ${accent}`} />
       </span>
-      <span className={`font-display font-black tracking-tight ${name}`}>
+      <span className={`truncate font-display font-black tracking-tight ${name}`}>
         {SITE_NAME}
       </span>
     </Link>
