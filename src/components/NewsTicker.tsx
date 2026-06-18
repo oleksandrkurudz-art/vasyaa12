@@ -9,9 +9,12 @@ type Item = Article & { category: Category };
 // На телефоні це основний спосіб перегляду стрічки; на ПК — права колонка.
 export default function NewsTicker({ articles }: { articles: Item[] }) {
   return (
-    <ul className="divide-y divide-neutral-200 overflow-hidden rounded-xl border border-neutral-200 bg-white">
+    <ul>
       {articles.map((a) => (
-        <li key={a.id} className="group">
+        <li
+          key={a.id}
+          className="group border-t border-brand-100 first:border-t-0"
+        >
           <Link
             href={`/${a.category.slug}/${a.slug}`}
             className="block px-4 py-3 transition-colors hover:bg-neutral-50"
