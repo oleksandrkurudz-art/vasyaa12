@@ -1,9 +1,15 @@
 import NavLinks from "@/components/NavLinks";
+import { getActiveCommunity, getCommunities } from "@/lib/community-filter";
 
 // Меню розділів окремою липкою смугою: лишається зверху при скролі,
 // а темна шапка йде вгору. Винесене з <header>, щоб контейнером для
 // sticky був увесь layout, а не лише шапка.
-export default function NavBar() {
+export default async function NavBar() {
+  const [communities, activeCommunity] = await Promise.all([
+    getCommunities(),
+    getActiveCommunity(),
+  ]);
+
   return (
     <div className="sticky top-0 z-30">
       {/* Синя акцент-лінія — тонкий «капелюх» липкої смуги */}
@@ -14,7 +20,10 @@ export default function NavBar() {
           мобільне меню позиціонувалось відносно смуги. */}
       <div className="relative border-b border-neutral-200 bg-neutral-100 shadow-md">
         <nav className="px-4 sm:px-6">
-          <NavLinks />
+          <NavLinks
+            communities={communities}
+            activeCommunitySlug={activeCommunity?.slug ?? null}
+          />
         </nav>
       </div>
     </div>

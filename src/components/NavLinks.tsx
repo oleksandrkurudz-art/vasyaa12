@@ -4,8 +4,16 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { CATEGORIES, categoryStyle } from "@/lib/categories";
+import CommunitySwitcher from "@/components/CommunitySwitcher";
+import type { Community } from "@/generated/prisma/client";
 
-export default function NavLinks() {
+export default function NavLinks({
+  communities,
+  activeCommunitySlug,
+}: {
+  communities: Community[];
+  activeCommunitySlug: string | null;
+}) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -55,6 +63,14 @@ export default function NavLinks() {
             id="mobile-nav"
             className="absolute inset-x-0 top-full border-b border-neutral-200 bg-neutral-100 shadow-md"
           >
+            {/* Перемикач громади — на телефоні живе тут, у бургері */}
+            <div className="border-b border-neutral-200 px-4 py-3">
+              <CommunitySwitcher
+                communities={communities}
+                activeSlug={activeCommunitySlug}
+                variant="light"
+              />
+            </div>
             <ul className="flex flex-col px-4 py-1">
               {CATEGORIES.map((c) => (
                 <li key={c.slug}>

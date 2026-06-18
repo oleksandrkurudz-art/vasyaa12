@@ -12,7 +12,7 @@
 
 - **Живий сайт:** https://vasyaa12.vercel.app (Vercel-проєкт `vasyaa12`).
 - **Репо:** https://github.com/oleksandrkurudz-art/vasyaa12 (гілка `main`).
-- БД — **Supabase Postgres** (ref `pruswnyuxxaqmxrchhzu`, eu-west-3), підключення «Session pooler».
+- БД — **Supabase Postgres** (ref `pruswnyuxxaqmxrchhzu`, eu-west-3), підключення **«Transaction pooler»** (порт `6543`) — правильний режим для serverless/Vercel.
 
 ---
 
@@ -64,6 +64,11 @@
 - **Стейл Prisma-клієнт** мовчки давав 404 на розділах/статтях. Фікс: скрипт `predev` →
   `prisma generate` на кожному `npm run dev`. Запускаєш dev інакше — зроби `npx prisma generate` сам.
 - **Пароль БД містить `@`** → у `DATABASE_URL` кодувати як `%40`.
+- **Пул з'єднань: Transaction pooler (порт 6543), НЕ Session pooler (5432).** Session-режим тримав
+  з'єднання на весь час сесії → локальний dev + прод-лямбди перебивали ліміт (~15) і давали
+  `EMAXCONNSESSION`. Transaction pooler мультиплексує короткі з'єднання. Адаптер `PrismaPg` за
+  замовчуванням НЕ кешує prepared statements, тож із transaction-режимом сумісний без `pgbouncer=true`.
+  Перехід = лише порт `5432→6543` у `DATABASE_URL` (хост/юзер/пароль ті самі) локально **і** у Vercel env.
 - **Деплой вручну:** `vercel deploy --prod --yes` (CLI залогінений як `oleksandrkurudz-art`).
   Env: `printf '%s' '<val>' | vercel env add <NAME> production`. ⚠️ Локальний `main` може бути
   попереду GitHub — push не автоматичний.

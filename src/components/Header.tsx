@@ -2,13 +2,12 @@ import Link from "next/link";
 import Logo from "@/components/Logo";
 import CommunitySwitcher from "@/components/CommunitySwitcher";
 import { getRates, formatRate } from "@/lib/rates";
-import { prisma } from "@/lib/db";
-import { getActiveCommunity } from "@/lib/community-filter";
+import { getActiveCommunity, getCommunities } from "@/lib/community-filter";
 
 export default async function Header() {
   const [rates, communities, activeCommunity] = await Promise.all([
     getRates(),
-    prisma.community.findMany({ orderBy: { order: "asc" } }),
+    getCommunities(),
     getActiveCommunity(),
   ]);
   // Обчислюємо при рендері, щоб дата не «застрягала» на момент старту сервера.
@@ -34,11 +33,13 @@ export default async function Header() {
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Перемикач громади — видно на всіх ширинах */}
-          <CommunitySwitcher
-            communities={communities}
-            activeSlug={activeCommunity?.slug ?? null}
-          />
+          {/* Перемикач громади — на телефоні захований у бургер-меню (NavLinks) */}
+          <div className="hidden sm:block">
+            <CommunitySwitcher
+              communities={communities}
+              activeSlug={activeCommunity?.slug ?? null}
+            />
+          </div>
 
           {/* Курси валют — маленькі картки з прапорами */}
           <div className="hidden items-center gap-2 sm:flex">

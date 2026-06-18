@@ -15,6 +15,12 @@ export const getActiveCommunity = cache(async () => {
   return prisma.community.findUnique({ where: { slug } });
 });
 
+/** Усі громади за порядком. cache() — щоб Header і NavBar не дублювали запит
+ *  за один рендер сторінки. */
+export const getCommunities = cache(() =>
+  prisma.community.findMany({ orderBy: { order: "asc" } }),
+);
+
 /** Фрагмент Prisma-where: новини обраної громади + загальнорайонні (null).
  *  Якщо громади не обрано — порожній фільтр (усе). */
 export function communityFilter(communityId: number | null | undefined) {

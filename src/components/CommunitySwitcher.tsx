@@ -10,16 +10,23 @@ import type { Community } from "@/generated/prisma/client";
 export default function CommunitySwitcher({
   communities,
   activeSlug,
+  variant = "dark",
 }: {
   communities: Community[];
   activeSlug: string | null;
+  // dark — на темній шапці; light — у світлому бургер-меню на телефоні.
+  variant?: "dark" | "light";
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
+  const light = variant === "light";
+
   return (
     <label
-      className="flex items-center gap-1 rounded-md bg-white/10 px-2 py-1 text-xs text-white"
+      className={`flex items-center gap-1 rounded-md px-2 py-1 text-xs ${
+        light ? "bg-neutral-200 text-neutral-800" : "bg-white/10 text-white"
+      }`}
       title="Оберіть громаду"
     >
       <span aria-hidden>📍</span>
@@ -34,7 +41,9 @@ export default function CommunitySwitcher({
             router.refresh();
           });
         }}
-        className="max-w-[9rem] cursor-pointer bg-transparent font-semibold text-white outline-none [&>option]:text-neutral-900"
+        className={`max-w-[9rem] cursor-pointer bg-transparent font-semibold outline-none [&>option]:text-neutral-900 ${
+          light ? "text-neutral-900" : "text-white"
+        }`}
       >
         <option value="">Весь район</option>
         {communities.map((c) => (
