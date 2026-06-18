@@ -29,7 +29,20 @@ export default function CommunitySwitcher({
       }`}
       title="Оберіть громаду"
     >
-      <span aria-hidden>📍</span>
+      {/* Брендова шпилька замість емодзі — однакова на всіх пристроях */}
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        aria-hidden
+        className="shrink-0 text-brand-600"
+      >
+        <path
+          fill="currentColor"
+          d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"
+        />
+        <circle cx="12" cy="9" r="2.6" fill={light ? "#e5e7eb" : "#171717"} />
+      </svg>
       <select
         aria-label="Громада"
         value={activeSlug ?? ""}

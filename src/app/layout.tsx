@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Merriweather } from "next/font/google";
+import { Inter, Unbounded } from "next/font/google";
 import "./globals.css";
 import { SITE_NAME, SITE_SLOGAN, SITE_URL } from "@/lib/categories";
 
@@ -8,10 +8,11 @@ const inter = Inter({
   subsets: ["latin", "cyrillic"],
 });
 
-const merriweather = Merriweather({
-  variable: "--font-merriweather",
+// Unbounded — виразний дисплейний шрифт (повна кирилиця) для заголовків/логотипа.
+const unbounded = Unbounded({
+  variable: "--font-unbounded",
   subsets: ["latin", "cyrillic"],
-  weight: ["700", "900"],
+  weight: ["700", "800", "900"],
 });
 
 export const metadata: Metadata = {
@@ -46,7 +47,7 @@ export default function RootLayout({
   return (
     <html
       lang="uk"
-      className={`${inter.variable} ${merriweather.variable} h-full antialiased`}
+      className={`${inter.variable} ${unbounded.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-white text-neutral-900">{children}</body>
     </html>

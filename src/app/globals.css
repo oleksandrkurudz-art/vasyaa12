@@ -2,7 +2,6 @@
 
 @theme {
   --font-sans: var(--font-inter);
-  --font-serif: var(--font-merriweather);
 
   /* Фірмова палітра — синій акцент + червоний для термінових */
   --color-brand-50: #eff6ff;
@@ -33,8 +32,8 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* Серифні заголовки новин — відчуття справжнього медіа */
+/* Дисплейні заголовки — Unbounded: сучасний, з характером */
 .font-display {
-  font-family: var(--font-merriweather), Georgia, serif;
-  letter-spacing: -0.01em;
+  font-family: var(--font-unbounded), system-ui, sans-serif;
+  letter-spacing: -0.02em;
 }
