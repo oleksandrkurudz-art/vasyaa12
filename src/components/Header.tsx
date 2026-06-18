@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Logo from "@/components/Logo";
 import CommunitySwitcher from "@/components/CommunitySwitcher";
+import MobileMenu from "@/components/MobileMenu";
 import { getRates, formatRate } from "@/lib/rates";
 import { getActiveCommunity, getCommunities } from "@/lib/community-filter";
 
@@ -21,13 +22,15 @@ export default async function Header() {
   }).format(now);
 
   return (
-    <header className="bg-neutral-900 text-white">
+    // Липкий на телефоні (на десктопі фіксується NavBar). sticky = контейнер
+    // для absolute-меню бургера.
+    <header className="sticky top-0 z-40 bg-neutral-900 text-white sm:static sm:z-auto">
       {/* Логотип + сервіси (на всю ширину) */}
-      <div className="flex items-center justify-between gap-4 px-4 py-3 sm:px-6">
+      <div className="flex items-center justify-between gap-3 px-4 py-3 sm:gap-4 sm:px-6">
         <div className="flex min-w-0 items-center gap-3">
           <Logo size="md" />
-          {/* Дата — поруч із логотипом */}
-          <span className="hidden whitespace-nowrap border-l border-white/15 pl-3 text-xs text-neutral-400 md:block">
+          {/* Дата — поруч із логотипом. На телефоні замінює прихований напис лого. */}
+          <span className="whitespace-nowrap text-xs text-neutral-400 sm:border-l sm:border-white/15 sm:pl-3">
             <span className="uppercase">{weekday}</span>, {dayMonth}
           </span>
         </div>
@@ -77,6 +80,12 @@ export default async function Header() {
             </svg>
             <span className="hidden sm:inline">Пошук</span>
           </Link>
+
+          {/* Бургер — лише на телефоні (розділи + громада) */}
+          <MobileMenu
+            communities={communities}
+            activeCommunitySlug={activeCommunity?.slug ?? null}
+          />
         </div>
       </div>
     </header>

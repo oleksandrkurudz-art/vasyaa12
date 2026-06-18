@@ -30,7 +30,9 @@ export default function Logo({
         </span>
         <span className={`absolute rounded-full bg-white/55 ${accent}`} />
       </span>
-      <span className={`truncate font-display font-black tracking-tight ${name}`}>
+      <span
+        className={`hidden truncate font-display font-black tracking-tight sm:block ${name}`}
+      >
         {SITE_NAME}
       </span>
     </Link>
