@@ -12,9 +12,18 @@ function sessionToken(): string {
   return crypto.createHash("sha256").update(`${PASSWORD}:${SECRET}`).digest("hex");
 }
 
+// Порівняння за сталий час — щоб не дати підбирати пароль/токен за таймінгом.
+function safeEqual(a: string, b: string): boolean {
+  const ab = Buffer.from(a);
+  const bb = Buffer.from(b);
+  if (ab.length !== bb.length) return false;
+  return crypto.timingSafeEqual(ab, bb);
+}
+
 export async function isAuthenticated(): Promise<boolean> {
   const store = await cookies();
-  return store.get(COOKIE)?.value === sessionToken();
+  const value = store.get(COOKIE)?.value;
+  return value !== undefined && safeEqual(value, sessionToken());
 }
 
 /** Викликається на початку кожної захищеної admin-сторінки / дії. */
@@ -23,7 +32,7 @@ export async function requireAuth(): Promise<void> {
 }
 
 export async function login(password: string): Promise<boolean> {
-  if (password !== PASSWORD) return false;
+  if (!safeEqual(password, PASSWORD)) return false;
   const store = await cookies();
   store.set(COOKIE, sessionToken(), {
     httpOnly: true,

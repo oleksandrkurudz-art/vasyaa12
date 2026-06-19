@@ -87,9 +87,9 @@ export function getRelatedArticles(
   });
 }
 
-// УВАГА: SQLite `contains` чутливий до регістру для кирилиці (на відміну від ASCII).
-// На Postgres варто додати `mode: "insensitive"`.
-/** Пошук новин за заголовком, анонсом, текстом і тегами. */
+/** Пошук новин за заголовком, анонсом, текстом і тегами.
+ *  Postgres `contains` чутливий до регістру — тому `mode: "insensitive"`,
+ *  інакше «Калуш» не знайде «калуш». */
 export async function searchArticles(query: string) {
   const q = query.trim();
   if (!q) return [];
@@ -97,10 +97,10 @@ export async function searchArticles(query: string) {
     where: {
       ...PUBLISHED,
       OR: [
-        { title: { contains: q } },
-        { excerpt: { contains: q } },
-        { body: { contains: q } },
-        { tags: { contains: q.toLowerCase() } },
+        { title: { contains: q, mode: "insensitive" } },
+        { excerpt: { contains: q, mode: "insensitive" } },
+        { body: { contains: q, mode: "insensitive" } },
+        { tags: { contains: q, mode: "insensitive" } },
       ],
     },
     include: { category: true },

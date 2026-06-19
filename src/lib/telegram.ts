@@ -13,8 +13,20 @@ async function call(method: string, body: unknown): Promise<unknown> {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify(body),
+    signal: AbortSignal.timeout(15_000),
   });
-  return res.json();
+  // Telegram віддає HTTP 200 навіть на логічні помилки — реальний статус у полі `ok`.
+  // Не перевіряючи його, ми б мовчки ковтали «message too long», заблокований чат тощо.
+  const json = (await res.json().catch(() => null)) as {
+    ok?: boolean;
+    description?: string;
+  } | null;
+  if (!res.ok || !json?.ok) {
+    throw new Error(
+      `Telegram ${method}: ${json?.description || `HTTP ${res.status}`}`,
+    );
+  }
+  return json;
 }
 
 export type InlineButton = { text: string; callback_data: string };

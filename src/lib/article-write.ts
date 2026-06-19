@@ -87,3 +87,19 @@ export async function publishArticle(id: number) {
     include: { category: true },
   });
 }
+
+/**
+ * Видаляє статтю за id. Повертає її slug + slug категорії (щоб оновити кеш
+ * відповідних сторінок) або null, якщо такої статті вже немає.
+ */
+export async function deleteArticle(
+  id: number,
+): Promise<{ slug: string; categorySlug: string } | null> {
+  const existing = await prisma.article.findUnique({
+    where: { id },
+    select: { slug: true, category: { select: { slug: true } } },
+  });
+  if (!existing) return null;
+  await prisma.article.delete({ where: { id } });
+  return { slug: existing.slug, categorySlug: existing.category.slug };
+}

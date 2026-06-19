@@ -86,3 +86,29 @@ export async function uploadImage(
   } = supabase.storage.from(BUCKET).getPublicUrl(path);
   return publicUrl;
 }
+
+/**
+ * Завантажує зображення за зовнішнім URL і перезаливає його у наш бакет
+ * (щоб не хотлінкати чуже фото й не залежати від чужого хоста/next-image).
+ * Помилки не кидає — обкладинка необов'язкова; повертає null при будь-якому збої.
+ */
+export async function uploadImageFromUrl(
+  url: string | null,
+  prefix = "articles",
+): Promise<string | null> {
+  if (!url) return null;
+  try {
+    const res = await fetch(url, {
+      redirect: "follow",
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (!res.ok) return null;
+    const type = (res.headers.get("content-type") || "").split(";")[0].trim();
+    if (!ALLOWED.has(type)) return null;
+    const buf = Buffer.from(await res.arrayBuffer());
+    const file = new File([new Uint8Array(buf)], "cover", { type });
+    return await uploadImage(file, prefix);
+  } catch {
+    return null;
+  }
+}

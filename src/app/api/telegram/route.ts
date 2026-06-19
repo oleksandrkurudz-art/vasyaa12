@@ -11,8 +11,12 @@ import {
 } from "@/lib/telegram";
 import { generateArticle } from "@/lib/copywriter";
 import { fetchArticle } from "@/lib/extract";
-import { createArticleDraft, publishArticle } from "@/lib/article-write";
-import { uploadImage } from "@/lib/storage";
+import {
+  createArticleDraft,
+  publishArticle,
+  deleteArticle,
+} from "@/lib/article-write";
+import { uploadImage, uploadImageFromUrl } from "@/lib/storage";
 import { categoryName, SITE_URL } from "@/lib/categories";
 
 // Потрібні prisma/pg/sharp → лише Node-рантайм (не edge). До 60 с на генерацію.
@@ -33,18 +37,27 @@ export async function POST(req: Request): Promise<Response> {
   const update = (await req.json()) as TgUpdate;
 
   if (update.callback_query) {
-    await handleCallback(update.callback_query);
+    // Помилки гасимо тут: інакше 500 змусив би Telegram ретраїти той самий апдейт.
+    await handleCallback(update.callback_query).catch((e) =>
+      console.error("[telegram] handleCallback:", e),
+    );
     return Response.json({ ok: true });
   }
 
   const msg = update.message;
   if (msg?.chat) {
     if (!isAllowed(msg.from?.id)) {
-      await sendMessage(msg.chat.id, "⛔ Доступ лише для редакторів порталу.");
+      await sendMessage(msg.chat.id, "⛔ Доступ лише для редакторів порталу.").catch(
+        (e) => console.error("[telegram] sendMessage:", e),
+      );
       return Response.json({ ok: true });
     }
     // Важка робота (генерація) — у фоні, щоб одразу віддати 200 і Telegram не ретраїв.
-    after(() => handleMessage(msg).catch(() => {}));
+    after(() =>
+      handleMessage(msg).catch((e) =>
+        console.error("[telegram] handleMessage:", e),
+      ),
+    );
     return Response.json({ ok: true });
   }
 
@@ -117,7 +130,9 @@ async function buildSource(
   if (urlMatch) {
     const extracted = await fetchArticle(urlMatch[0]);
     const source = `${extracted.title}\n\n${extracted.text}`.trim();
-    return { source, coverImage: extracted.ogImage };
+    // Перезаливаємо обкладинку до себе (не хотлінкаємо чужий og:image).
+    const coverImage = await uploadImageFromUrl(extracted.ogImage, "telegram");
+    return { source, coverImage };
   }
 
   return { source: text, coverImage: null };
@@ -159,8 +174,13 @@ async function handleCallback(cq: TgCallbackQuery): Promise<void> {
         );
       }
     } else if (action === "del") {
-      const { prisma } = await import("@/lib/db");
-      await prisma.article.delete({ where: { id } }).catch(() => {});
+      const removed = await deleteArticle(id);
+      if (removed) {
+        // Якщо новину вже було опубліковано — прибираємо її з кешу сторінок.
+        revalidatePath("/");
+        revalidatePath(`/${removed.categorySlug}`);
+        revalidatePath(`/${removed.categorySlug}/${removed.slug}`);
+      }
       await editMessageText(chatId, messageId, "🗑 Видалено.");
     } else if (action === "keep") {
       await editMessageText(

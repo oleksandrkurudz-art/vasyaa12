@@ -18,16 +18,32 @@ export async function fetchArticle(url: string): Promise<Extracted> {
   const res = await fetch(url, {
     headers: { "user-agent": "Mozilla/5.0 (GromadaNews bot)" },
     redirect: "follow",
+    // Без таймауту повільна сторінка з'їла б увесь бюджет функції (maxDuration=60).
+    signal: AbortSignal.timeout(15_000),
   });
   if (!res.ok) throw new Error(`Сторінка недоступна (HTTP ${res.status}).`);
+  const contentType = (res.headers.get("content-type") || "").toLowerCase();
+  if (contentType && !contentType.includes("html")) {
+    throw new Error("За посиланням не вебсторінка (очікувався HTML).");
+  }
 
   const html = await res.text();
   const $ = cheerio.load(html);
 
-  const ogImage =
+  // og:image часто відносний ("/img/x.jpg") — робимо абсолютним відносно сторінки,
+  // інакше next/image його відхилить.
+  const ogImageRaw =
     $('meta[property="og:image"]').attr("content") ||
     $('meta[name="twitter:image"]').attr("content") ||
     null;
+  let ogImage: string | null = null;
+  if (ogImageRaw) {
+    try {
+      ogImage = new URL(ogImageRaw, res.url || url).href;
+    } catch {
+      ogImage = null;
+    }
+  }
 
   const title =
     $('meta[property="og:title"]').attr("content") ||

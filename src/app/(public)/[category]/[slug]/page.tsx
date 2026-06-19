@@ -20,9 +20,10 @@ export const dynamic = "force-dynamic";
 type Params = { params: Promise<{ category: string; slug: string }> };
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
-  const { slug } = await params;
+  const { category, slug } = await params;
   const article = await getArticleBySlug(slug);
-  if (!article) return { title: "Новину не знайдено" };
+  if (!article || article.category.slug !== category)
+    return { title: "Новину не знайдено" };
 
   const url = `/${article.category.slug}/${article.slug}`;
   // Картинка обкладинки — для прев'ю в Telegram/Viber/Facebook при поширенні.
@@ -55,10 +56,13 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 }
 
 export default async function ArticlePage({ params }: Params) {
-  const { slug } = await params;
+  const { category, slug } = await params;
   const article = await getArticleBySlug(slug);
 
-  if (!article) notFound();
+  // Slug унікальний глобально, тож стаття відкрилася б під будь-яким префіксом
+  // категорії (/biznes/<slug-з-novyny>) — дублікат для SEO. Пускаємо лише
+  // канонічний шлях, решта → 404.
+  if (!article || article.category.slug !== category) notFound();
 
   // Усі три операції незалежні — виконуємо паралельно.
   const [, ads, related] = await Promise.all([
@@ -80,9 +84,15 @@ export default async function ArticlePage({ params }: Params) {
     datePublished: article.publishedAt?.toISOString(),
     dateModified: article.updatedAt.toISOString(),
     articleSection: article.category.name,
+    inLanguage: "uk-UA",
     url: canonical,
-    mainEntityOfPage: canonical,
-    publisher: { "@type": "Organization", name: SITE_NAME },
+    mainEntityOfPage: { "@type": "WebPage", "@id": canonical },
+    publisher: {
+      "@type": "Organization",
+      name: SITE_NAME,
+      // Логотип видавця — рекомендований Google для NewsArticle/Article.
+      logo: { "@type": "ImageObject", url: `${SITE_URL}/icon.png` },
+    },
   };
 
   return (
