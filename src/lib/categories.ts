@@ -105,6 +105,11 @@ export function categoryStyle(slug: string): CategoryStyle {
   return CATEGORY_STYLES[slug] ?? DEFAULT_STYLE;
 }
 
+/** Людська назва розділу за slug (фолбек — сам slug). */
+export function categoryName(slug: string): string {
+  return CATEGORIES.find((c) => c.slug === slug)?.name ?? slug;
+}
+
 export const SITE_NAME = "Громада.Новини";
 export const SITE_SLOGAN = "Новини, люди, бізнес — в одному місці";
 

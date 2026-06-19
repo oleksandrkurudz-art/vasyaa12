@@ -4,24 +4,12 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { requireAuth } from "@/lib/auth";
-import { slugify } from "@/lib/slug";
 import { formatTags } from "@/lib/tags";
 import { uploadImage } from "@/lib/storage";
+import { uniqueSlug } from "@/lib/article-write";
 
 function str(fd: FormData, key: string): string {
   return String(fd.get(key) ?? "").trim();
-}
-
-async function uniqueSlug(base: string, excludeId?: number): Promise<string> {
-  const root = slugify(base) || "novyna";
-  let slug = root;
-  let n = 1;
-  // Гарантуємо унікальність slug.
-  while (true) {
-    const existing = await prisma.article.findUnique({ where: { slug } });
-    if (!existing || existing.id === excludeId) return slug;
-    slug = `${root}-${++n}`;
-  }
 }
 
 /* ----------------------------- Новини ----------------------------- */

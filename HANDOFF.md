@@ -43,9 +43,13 @@
 
 ### Відкриті задачі / наступні кроки (за пріоритетом цінності)
 - **Бізнес-картки + каталог бізнесу** — 💰 головні гроші, наступна велика хвиля.
-- **Telegram-бот** для AI-копірайтингу новин — план готовий
-  (`~/.claude/plans/iridescent-kindling-mango.md`), код ще НЕ писаний. AI робить чернетку →
-  людина публікує (НЕ автокопіювати ТСН — авторські права).
+- **Telegram-бот** для AI-копірайтингу новин — ✅ КОД НАПИСАНО (вебхук `src/app/api/telegram/route.ts`,
+  `copywriter.ts`/`extract.ts`/`telegram.ts`/`article-write.ts`). Провайдер — **OpenAI** (`openai` SDK,
+  json_schema strict; модель `OPENAI_MODEL`, дефолт `gpt-4o-mini`) — НЕ Claude (вибір клієнта).
+  Кидаєш текст/лінк/фото-з-підписом → чернетка → прев'ю з кнопками Опублікувати/Чернетка/Видалити.
+  Лишилось: задати env у Vercel + локально (`OPENAI_API_KEY`, `TELEGRAM_BOT_TOKEN`,
+  `TELEGRAM_WEBHOOK_SECRET`, `TELEGRAM_ALLOWED_IDS`), задеплоїти, один раз
+  `npx tsx scripts/set-telegram-webhook.ts <prod-url>`.
 - Інше з бачення: онлайн-довідник, push, кабінет мешканця, Facebook-автопостинг, власний домен;
   пізніше/дорого — відео, трансляції, мобільний додаток, карта, Work.ua.
 - **Форма реклами (`AdForm`) ще на URL** — підключити `CoverUpload` + `uploadImage(file, "ads")`.

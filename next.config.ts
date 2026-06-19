@@ -14,6 +14,8 @@ const nextConfig: NextConfig = {
   // де працює завантаження/стиснення фото. Інакше — "Failed to load external module".
   outputFileTracingIncludes: {
     "/admin/**": ["node_modules/sharp/**/*", "node_modules/@img/**/*"],
+    // Бот теж стискає завантажені фото через sharp.
+    "/api/telegram/**": ["node_modules/sharp/**/*", "node_modules/@img/**/*"],
   },
 };
 
