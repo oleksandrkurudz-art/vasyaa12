@@ -17,9 +17,9 @@ export default function NewsTicker({ articles }: { articles: Item[] }) {
         >
           <Link
             href={`/${a.category.slug}/${a.slug}`}
-            className="block px-4 py-3 transition-colors hover:bg-neutral-50"
+            className="block px-4 py-4 transition-colors hover:bg-neutral-50"
           >
-            <div className="flex items-center gap-2 text-[11px] text-neutral-400">
+            <div className="flex items-center gap-2 text-xs text-neutral-400">
               <span
                 className={`font-semibold uppercase tracking-wide ${categoryStyle(a.category.slug).text}`}
               >
@@ -28,7 +28,7 @@ export default function NewsTicker({ articles }: { articles: Item[] }) {
               <span aria-hidden>·</span>
               <time>{formatDate(a.publishedAt)}</time>
             </div>
-            <h3 className="mt-1 text-sm font-semibold leading-snug text-neutral-800 transition-colors group-hover:text-brand-700">
+            <h3 className="mt-1.5 text-lg font-bold leading-snug text-neutral-900 transition-colors group-hover:text-brand-700">
               {a.title}
             </h3>
           </Link>
