@@ -21,8 +21,16 @@ export default function MobileMenu({
 
   const isActive = (slug: string) => pathname === `/${slug}`;
 
-  // Закриваємо при зміні маршруту та по Escape.
-  useEffect(() => setOpen(false), [pathname]);
+  // Пункти меню закривають його по кліку самі; це — підстраховка для навігації
+  // не через них (напр. кнопка «назад»). Коригуємо стан під час рендера —
+  // так радить React замість setState в ефекті (без зайвого циклу рендера).
+  const [seenPath, setSeenPath] = useState(pathname);
+  if (pathname !== seenPath) {
+    setSeenPath(pathname);
+    setOpen(false);
+  }
+
+  // Закриваємо по Escape, поки меню відкрите.
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);

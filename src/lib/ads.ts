@@ -4,6 +4,16 @@ import type { Ad, Advertiser } from "@/generated/prisma/client";
 
 export type AdWithAdvertiser = Ad & { advertiser: Advertiser };
 
+// Рівномірне перемішування (Фішер-Єйтс). `sort(() => Math.random() - 0.5)`
+// дає зміщений розподіл — деякі позиції випадали б частіше.
+function shuffle<T>(arr: T[]): T[] {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
 /**
  * Рушій контекстної реклами.
  *
@@ -38,9 +48,7 @@ export async function getContextualAds(
     .sort((a, b) => b.score - a.score);
 
   // Добираємо загальною рекламою, якщо релевантних не вистачає.
-  const filler = scored
-    .filter((s) => s.score === 0)
-    .sort(() => Math.random() - 0.5);
+  const filler = shuffle(scored.filter((s) => s.score === 0));
 
   return [...relevant, ...filler].slice(0, limit).map((s) => s.ad);
 }

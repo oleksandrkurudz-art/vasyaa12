@@ -1,4 +1,6 @@
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
+import { after } from "next/server";
 import Link from "next/link";
 import type { Metadata } from "next";
 import AdSlot from "@/components/AdSlot";
@@ -11,6 +13,7 @@ import {
   getRelatedArticles,
 } from "@/lib/articles";
 import { getContextualAds } from "@/lib/ads";
+import { isBot } from "@/lib/bots";
 import { SITE_NAME, SITE_URL, categoryStyle } from "@/lib/categories";
 import { formatDate, formatViews, hasEnoughViews } from "@/lib/format";
 import { parseTags } from "@/lib/tags";
@@ -64,13 +67,26 @@ export default async function ArticlePage({ params }: Params) {
   // канонічний шлях, решта → 404.
   if (!article || article.category.slug !== category) notFound();
 
-  // Усі три операції незалежні — виконуємо паралельно.
-  const [, ads, related] = await Promise.all([
-    incrementViews(article.id),
+  // Лічильник переглядів некритичний: рахуємо ПІСЛЯ відповіді (after) і лише
+  // для людей — інакше збій запису валив би всю сторінку, а краулери й
+  // прев'ю-фетчери накручували б «Популярне».
+  const counted = !isBot((await headers()).get("user-agent"));
+  if (counted) {
+    after(async () => {
+      try {
+        await incrementViews(article.id);
+      } catch {
+        // перегляди неважливі — мовчки ігноруємо збій запису
+      }
+    });
+  }
+
+  const [ads, related] = await Promise.all([
     getContextualAds(article, 3),
     getRelatedArticles(article, 3),
   ]);
   const tags = parseTags(article.tags);
+  const displayViews = article.views + (counted ? 1 : 0);
   const paragraphs = article.body.split(/\n{2,}/).filter((p) => p.trim());
 
   const canonical = `${SITE_URL}/${article.category.slug}/${article.slug}`;
@@ -117,10 +133,10 @@ export default async function ArticlePage({ params }: Params) {
           </h1>
           <div className="mt-3 flex items-center gap-2 text-sm text-neutral-400">
             <time>{formatDate(article.publishedAt)}</time>
-            {hasEnoughViews(article.views + 1) && (
+            {hasEnoughViews(displayViews) && (
               <>
                 <span aria-hidden>·</span>
-                <span>{formatViews(article.views + 1)} переглядів</span>
+                <span>{formatViews(displayViews)} переглядів</span>
               </>
             )}
           </div>

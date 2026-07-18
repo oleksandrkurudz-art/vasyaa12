@@ -39,19 +39,36 @@ export async function getPopularArticles(limit = 5) {
 // `cache` дедуплікує однакові виклики в межах одного запиту
 // (сторінки звертаються і з generateMetadata, і з самого компонента).
 
-/** Опубліковані новини конкретного розділу. */
-export const getArticlesByCategory = cache(async (slug: string) => {
+/** Скільки новин показуємо на одній сторінці розділу. */
+export const CATEGORY_PAGE_SIZE = 12;
+
+/** Опубліковані новини конкретного розділу (посторінково).
+ *  Без ліміту вибірка тягла б усі новини розділу — з роками це повільно й дорого. */
+export const getArticlesByCategory = cache(async (slug: string, page = 1) => {
   const category = await prisma.category.findUnique({ where: { slug } });
   if (!category) return null;
 
   const community = await getActiveCommunity();
+  const where = {
+    ...PUBLISHED,
+    categoryId: category.id,
+    ...communityFilter(community?.id),
+  };
+
+  const total = await prisma.article.count({ where });
+  const totalPages = Math.max(1, Math.ceil(total / CATEGORY_PAGE_SIZE));
+  // Клампимо запитану сторінку в межі [1, totalPages] — ?page=999 покаже останню.
+  const currentPage = Math.min(Math.max(1, Math.floor(page) || 1), totalPages);
+
   const articles = await prisma.article.findMany({
-    where: { ...PUBLISHED, categoryId: category.id, ...communityFilter(community?.id) },
+    where,
     include: { category: true },
     orderBy: { publishedAt: "desc" },
+    skip: (currentPage - 1) * CATEGORY_PAGE_SIZE,
+    take: CATEGORY_PAGE_SIZE,
   });
 
-  return { category, articles };
+  return { category, articles, total, page: currentPage, totalPages };
 });
 
 /** Одна стаття за slug (тільки опублікована). */
@@ -91,8 +108,10 @@ export function getRelatedArticles(
  *  Postgres `contains` чутливий до регістру — тому `mode: "insensitive"`,
  *  інакше «Калуш» не знайде «калуш». */
 export async function searchArticles(query: string) {
-  const q = query.trim();
-  if (!q) return [];
+  // Обрізаємо надто довгі запити (захист від важких LIKE-сканів) і ігноруємо
+  // односимвольні — вони збіглися б майже з усім і навантажували б базу дарма.
+  const q = query.trim().slice(0, 100);
+  if (q.length < 2) return [];
   return prisma.article.findMany({
     where: {
       ...PUBLISHED,

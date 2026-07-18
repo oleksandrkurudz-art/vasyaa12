@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import ArticleCard from "@/components/ArticleCard";
@@ -7,17 +8,25 @@ import { categoryStyle } from "@/lib/categories";
 
 export const dynamic = "force-dynamic";
 
-type Params = { params: Promise<{ category: string }> };
+type Params = {
+  params: Promise<{ category: string }>;
+  searchParams: Promise<{ page?: string }>;
+};
 
-export async function generateMetadata({ params }: Params): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+  searchParams,
+}: Params): Promise<Metadata> {
   const { category } = await params;
-  const data = await getArticlesByCategory(category);
+  const { page } = await searchParams;
+  const data = await getArticlesByCategory(category, Number(page) || 1);
   return { title: data?.category.name ?? "Розділ" };
 }
 
-export default async function CategoryPage({ params }: Params) {
+export default async function CategoryPage({ params, searchParams }: Params) {
   const { category } = await params;
-  const data = await getArticlesByCategory(category);
+  const { page } = await searchParams;
+  const data = await getArticlesByCategory(category, Number(page) || 1);
 
   if (!data) notFound();
 
@@ -48,6 +57,37 @@ export default async function CategoryPage({ params }: Params) {
                 <ArticleCard key={article.id} article={article} />
               ))}
             </div>
+          )}
+
+          {data.totalPages > 1 && (
+            <nav
+              aria-label="Сторінки розділу"
+              className="flex items-center justify-between border-t border-neutral-200 pt-5"
+            >
+              {data.page > 1 ? (
+                <Link
+                  href={`/${data.category.slug}?page=${data.page - 1}`}
+                  className="rounded-md border border-neutral-300 px-4 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-100"
+                >
+                  ← Новіші
+                </Link>
+              ) : (
+                <span />
+              )}
+              <span className="text-sm text-neutral-500">
+                Сторінка {data.page} з {data.totalPages}
+              </span>
+              {data.page < data.totalPages ? (
+                <Link
+                  href={`/${data.category.slug}?page=${data.page + 1}`}
+                  className="rounded-md border border-neutral-300 px-4 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-100"
+                >
+                  Старіші →
+                </Link>
+              ) : (
+                <span />
+              )}
+            </nav>
           )}
         </div>
 
