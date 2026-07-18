@@ -1,12 +1,10 @@
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { saveAdvertiser, deleteAdvertiser } from "@/app/admin/actions";
+import { deleteAdvertiser } from "@/app/admin/actions";
+import AdvertiserForm from "@/components/admin/AdvertiserForm";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Рекламодавці · Адмінка" };
-
-const inputClass =
-  "w-full rounded-md border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-blue-500";
 
 export default async function AdminAdvertisers() {
   await requireAuth();
@@ -61,23 +59,7 @@ export default async function AdminAdvertisers() {
 
       <aside className="h-fit rounded-lg border border-neutral-200 bg-white p-5">
         <h2 className="text-lg font-bold text-neutral-900">Новий рекламодавець</h2>
-        <form action={saveAdvertiser} className="mt-4 space-y-3">
-          <input name="name" required placeholder="Назва" className={inputClass} />
-          <select name="type" className={inputClass} defaultValue="будмагазин">
-            <option value="будмагазин">Будмагазин</option>
-            <option value="АЗС">АЗС</option>
-            <option value="кафе">Кафе</option>
-            <option value="банк">Банк</option>
-            <option value="аптека">Аптека</option>
-            <option value="інше">Інше</option>
-          </select>
-          <button
-            type="submit"
-            className="w-full rounded-md bg-blue-700 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-800"
-          >
-            Додати
-          </button>
-        </form>
+        <AdvertiserForm />
       </aside>
     </div>
   );

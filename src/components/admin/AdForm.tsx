@@ -1,5 +1,8 @@
+"use client";
+
+import { useActionState } from "react";
 import Link from "next/link";
-import { saveAd } from "@/app/admin/actions";
+import { saveAd, type FormState } from "@/app/admin/actions";
 import type { Ad, Advertiser, Category } from "@/generated/prisma/client";
 
 const inputClass =
@@ -15,8 +18,13 @@ export default function AdForm({
   advertisers: Advertiser[];
   categories: Category[];
 }) {
+  const [state, formAction, pending] = useActionState<FormState, FormData>(
+    saveAd,
+    {},
+  );
+
   return (
-    <form action={saveAd} className="space-y-5">
+    <form action={formAction} className="space-y-5">
       {ad && <input type="hidden" name="id" value={ad.id} />}
 
       <div>
@@ -106,12 +114,19 @@ export default function AdForm({
         Активний (показувати на сайті)
       </label>
 
+      {state.error && (
+        <p className="rounded-md bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+          {state.error}
+        </p>
+      )}
+
       <div className="flex gap-3 pt-2">
         <button
           type="submit"
-          className="rounded-md bg-blue-700 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-800"
+          disabled={pending}
+          className="rounded-md bg-blue-700 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-800 disabled:opacity-60"
         >
-          Зберегти
+          {pending ? "Збереження…" : "Зберегти"}
         </button>
         <Link
           href="/admin/ads"

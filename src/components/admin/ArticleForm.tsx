@@ -1,5 +1,8 @@
+"use client";
+
+import { useActionState } from "react";
 import Link from "next/link";
-import { saveArticle } from "@/app/admin/actions";
+import { saveArticle, type FormState } from "@/app/admin/actions";
 import CoverUpload from "@/components/admin/CoverUpload";
 import type { Article, Category, Community } from "@/generated/prisma/client";
 
@@ -16,12 +19,13 @@ export default function ArticleForm({
   categories: Category[];
   communities: Community[];
 }) {
+  const [state, formAction, pending] = useActionState<FormState, FormData>(
+    saveArticle,
+    {},
+  );
+
   return (
-    <form
-      action={saveArticle}
-      encType="multipart/form-data"
-      className="space-y-5"
-    >
+    <form action={formAction} encType="multipart/form-data" className="space-y-5">
       {article && <input type="hidden" name="id" value={article.id} />}
 
       <div>
@@ -138,12 +142,19 @@ export default function ArticleForm({
         />
       </div>
 
+      {state.error && (
+        <p className="rounded-md bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+          {state.error}
+        </p>
+      )}
+
       <div className="flex gap-3 pt-2">
         <button
           type="submit"
-          className="rounded-md bg-blue-700 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-800"
+          disabled={pending}
+          className="rounded-md bg-blue-700 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-800 disabled:opacity-60"
         >
-          Зберегти
+          {pending ? "Збереження…" : "Зберегти"}
         </button>
         <Link
           href="/admin/articles"
