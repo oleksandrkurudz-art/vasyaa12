@@ -53,7 +53,7 @@
 - Інше з бачення: онлайн-довідник, push, кабінет мешканця, Facebook-автопостинг, власний домен;
   пізніше/дорого — відео, трансляції, мобільний додаток, карта, Work.ua.
 - **Форма реклами (`AdForm`) ще на URL** — підключити `CoverUpload` + `uploadImage(file, "ads")`.
-- GitHub-автодеплой не під'єднано → деплой вручну (див. розділ 3).
+- ✅ GitHub-автодеплой під'єднано (2026-07) — `push` у `main` деплоїть прод сам (див. розділ 3).
 
 ---
 
@@ -73,9 +73,11 @@
   `EMAXCONNSESSION`. Transaction pooler мультиплексує короткі з'єднання. Адаптер `PrismaPg` за
   замовчуванням НЕ кешує prepared statements, тож із transaction-режимом сумісний без `pgbouncer=true`.
   Перехід = лише порт `5432→6543` у `DATABASE_URL` (хост/юзер/пароль ті самі) локально **і** у Vercel env.
-- **Деплой вручну:** `vercel deploy --prod --yes` (CLI залогінений як `oleksandrkurudz-art`).
-  Env: `printf '%s' '<val>' | vercel env add <NAME> production`. ⚠️ Локальний `main` може бути
-  попереду GitHub — push не автоматичний.
+- **Деплой автоматичний з GitHub** (Git-інтеграція Vercel, підключена 2026-07). `git push` у `main`
+  → прод-деплой сам, ~40с. ⚠️ **Push = публікація на живий сайт**, окремої команди деплою не треба.
+  CLI (`vercel deploy --prod --yes`) не потрібен; так деплоїли до липня 2026, звідси старі
+  деплої з міткою `gitDirty`. Env і далі через CLI/дашборд:
+  `printf '%s' '<val>' | vercel env add <NAME> production`.
 - **Схемою керуємо через Supabase MCP** (`apply_migration`/`execute_sql`), build НЕ робить
   `migrate deploy`. Нова міграція: `npx prisma migrate diff … --script` → застосувати через MCP.
   MCP не віддає пароль БД і service-role ключ — їх дає користувач.
