@@ -6,8 +6,9 @@ export const metadata = { title: "Вхід в адмінку" };
 async function loginAction(formData: FormData) {
   "use server";
   const password = String(formData.get("password") ?? "");
-  const ok = await login(password);
-  if (!ok) redirect("/admin/login?error=1");
+  const result = await login(password);
+  if (result === "locked") redirect("/admin/login?error=locked");
+  if (result !== "ok") redirect("/admin/login?error=1");
   redirect("/admin");
 }
 
@@ -34,8 +35,16 @@ export default async function LoginPage({
           required
           className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
         />
-        {error && (
-          <p className="text-sm text-red-600">Невірний пароль. Спробуйте ще раз.</p>
+        {error === "locked" ? (
+          <p className="text-sm text-red-600">
+            Забагато спроб входу. Зачекайте кілька хвилин і спробуйте знову.
+          </p>
+        ) : (
+          error && (
+            <p className="text-sm text-red-600">
+              Невірний пароль. Спробуйте ще раз.
+            </p>
+          )
         )}
         <button
           type="submit"

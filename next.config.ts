@@ -1,9 +1,24 @@
 import type { NextConfig } from "next";
 
+// Хост нашого Supabase Storage — єдине джерело, яке ми оптимізуємо через
+// next/image. Береться з SUPABASE_URL, з фолбеком на відомий хост проєкту.
+// Хостити довільні URL через оптимізатор небезпечно (відкритий проксі:
+// будь-хто ганяв би свої зображення через наш /_next/image коштом Vercel),
+// тому вставлені редактором зовнішні URL рендеряться як є (unoptimized) —
+// див. src/components/Cover.tsx.
+function supabaseHost(): string {
+  try {
+    return new URL(process.env.SUPABASE_URL ?? "").hostname;
+  } catch {
+    return "pruswnyuxxaqmxrchhzu.supabase.co";
+  }
+}
+
 const nextConfig: NextConfig = {
   images: {
-    // Редактори вставляють довільні URL обкладинок/банерів, тому дозволяємо будь-який https-хост.
-    remotePatterns: [{ protocol: "https", hostname: "**" }],
+    remotePatterns: [
+      { protocol: "https", hostname: supabaseHost(), pathname: "/storage/**" },
+    ],
   },
   experimental: {
     // Дозволяємо вантажити фото обкладинок до 10 МБ через серверні дії (типово 1 МБ).
