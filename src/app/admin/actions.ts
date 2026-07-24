@@ -7,6 +7,8 @@ import { requireAuth } from "@/lib/auth";
 import { formatTags } from "@/lib/tags";
 import { uploadImage } from "@/lib/storage";
 import { uniqueSlug } from "@/lib/article-write";
+import { uniqueBusinessSlug } from "@/lib/businesses";
+import { isBusinessCategory } from "@/lib/business-categories";
 
 // Стан форми для useActionState: якщо є error — форма показує його й не навігує,
 // зберігаючи введені дані (на відміну від старого варіанта, де будь-яка проблема
@@ -21,8 +23,6 @@ function str(fd: FormData, key: string): string {
 function message(e: unknown): string {
   return e instanceof Error ? e.message : "Сталася помилка. Спробуйте ще раз.";
 }
-
-const ADVERTISER_TYPES = ["будмагазин", "АЗС", "кафе", "банк", "аптека", "інше"];
 
 /* ----------------------------- Новини ----------------------------- */
 
@@ -115,43 +115,87 @@ export async function deleteArticle(formData: FormData) {
   revalidatePath("/admin/articles");
 }
 
-/* --------------------------- Рекламодавці --------------------------- */
+/* ----------------------------- Бізнес ----------------------------- */
 
-export async function saveAdvertiser(
+export async function saveBusiness(
   _prev: FormState,
   formData: FormData,
 ): Promise<FormState> {
   await requireAuth();
+
   const id = Number(formData.get("id")) || null;
   const name = str(formData, "name");
-  const type = str(formData, "type");
+  const description = str(formData, "description");
+  const rawCategory = str(formData, "category");
+  const customSlug = str(formData, "slug");
+  // Громада бізнесу; порожнє значення = весь район (communityId = null).
+  const communityId = Number(formData.get("communityId")) || null;
 
-  if (!name) return { error: "Вкажіть назву рекламодавця." };
-  const data = {
-    name,
-    type: ADVERTISER_TYPES.includes(type) ? type : "інше",
-  };
+  if (!name) return { error: "Вкажіть назву бізнесу." };
+  if (!description) return { error: "Додайте короткий опис бізнесу." };
+
+  // Невідома категорія → фолбек «інше».
+  const category = isBusinessCategory(rawCategory) ? rawCategory : "inshe";
+
+  // «Оплачено до» — кінець дня включно (щоб «до 31.08» захоплювало 31 серпня).
+  const rawPaid = str(formData, "paidUntil");
+  let paidUntil: Date | null = null;
+  if (rawPaid) {
+    paidUntil = new Date(rawPaid + "T23:59:59");
+    if (isNaN(paidUntil.getTime())) {
+      return { error: 'Невірна дата "оплачено до".' };
+    }
+  }
 
   try {
-    if (id) await prisma.advertiser.update({ where: { id }, data });
-    else await prisma.advertiser.create({ data });
+    if (communityId) {
+      const community = await prisma.community.findUnique({
+        where: { id: communityId },
+      });
+      if (!community) return { error: "Обрана громада не існує." };
+    }
+
+    // Завантажене фото має пріоритет; інакше — значення поля «URL фото».
+    const uploaded = await uploadImage(
+      formData.get("coverFile") as File | null,
+      "businesses",
+    );
+    const photo = uploaded ?? (str(formData, "coverImage") || null);
+
+    const data = {
+      name,
+      description,
+      category,
+      phone: str(formData, "phone") || null,
+      address: str(formData, "address") || null,
+      website: str(formData, "website") || null,
+      photo,
+      tags: formatTags(str(formData, "tags").split(",")),
+      active: formData.get("active") === "on",
+      paidUntil,
+      communityId,
+    };
+
+    const slug = await uniqueBusinessSlug(customSlug || name, id ?? undefined);
+
+    if (id) await prisma.business.update({ where: { id }, data: { ...data, slug } });
+    else await prisma.business.create({ data: { ...data, slug } });
   } catch (e) {
     return { error: message(e) };
   }
 
-  revalidatePath("/admin/advertisers");
-  redirect("/admin/advertisers");
+  revalidatePath("/kataloh");
+  revalidatePath("/admin/businesses");
+  redirect("/admin/businesses");
 }
 
-export async function deleteAdvertiser(formData: FormData) {
+export async function deleteBusiness(formData: FormData) {
   await requireAuth();
   const id = Number(formData.get("id"));
-  // Видаляємо банери рекламодавця, потім самого рекламодавця.
-  if (id) {
-    await prisma.ad.deleteMany({ where: { advertiserId: id } });
-    await prisma.advertiser.delete({ where: { id } });
-  }
-  revalidatePath("/admin/advertisers");
+  // Банери бізнесу зникнуть каскадом (Ad.business onDelete: Cascade).
+  if (id) await prisma.business.delete({ where: { id } });
+  revalidatePath("/kataloh");
+  revalidatePath("/admin/businesses");
   revalidatePath("/admin/ads");
 }
 
@@ -164,33 +208,41 @@ export async function saveAd(
   await requireAuth();
   const id = Number(formData.get("id")) || null;
   const title = str(formData, "title");
-  const imageUrl = str(formData, "imageUrl");
   const linkUrl = str(formData, "linkUrl");
-  const advertiserId = Number(formData.get("advertiserId"));
+  const businessId = Number(formData.get("businessId"));
   const categoryId = Number(formData.get("categoryId")) || null;
 
   if (!title) return { error: "Вкажіть заголовок банера." };
-  if (!imageUrl) return { error: "Вкажіть URL зображення банера." };
-  if (!linkUrl) return { error: "Вкажіть посилання, куди веде банер." };
-  if (!Number.isInteger(advertiserId) || advertiserId <= 0) {
-    return { error: "Оберіть рекламодавця." };
+  if (!Number.isInteger(businessId) || businessId <= 0) {
+    return { error: "Оберіть бізнес, якому належить банер." };
   }
 
-  const data = {
-    title,
-    imageUrl,
-    linkUrl,
-    tags: formatTags(str(formData, "tags").split(",")),
-    active: formData.get("active") === "on",
-    advertiserId,
-    categoryId,
-  };
-
   try {
-    const advertiser = await prisma.advertiser.findUnique({
-      where: { id: advertiserId },
+    const business = await prisma.business.findUnique({
+      where: { id: businessId },
     });
-    if (!advertiser) return { error: "Обраний рекламодавець не існує." };
+    if (!business) return { error: "Обраний бізнес не існує." };
+
+    // Завантажений банер має пріоритет; інакше — поле «URL зображення».
+    const uploaded = await uploadImage(
+      formData.get("bannerFile") as File | null,
+      "ads",
+    );
+    const imageUrl = uploaded ?? str(formData, "imageUrl");
+    if (!imageUrl) {
+      return { error: "Додайте зображення банера або вкажіть його URL." };
+    }
+
+    const data = {
+      title,
+      imageUrl,
+      // Порожнє посилання = банер веде на картку бізнесу (/kataloh/{slug}).
+      linkUrl,
+      tags: formatTags(str(formData, "tags").split(",")),
+      active: formData.get("active") === "on",
+      businessId,
+      categoryId,
+    };
 
     if (id) await prisma.ad.update({ where: { id }, data });
     else await prisma.ad.create({ data });

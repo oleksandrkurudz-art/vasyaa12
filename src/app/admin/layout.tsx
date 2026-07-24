@@ -32,8 +32,8 @@ export default async function AdminLayout({
                 <Link href="/admin/ads" className="hover:text-white">
                   Реклама
                 </Link>
-                <Link href="/admin/advertisers" className="hover:text-white">
-                  Рекламодавці
+                <Link href="/admin/businesses" className="hover:text-white">
+                  Бізнес
                 </Link>
               </nav>
             )}

@@ -28,6 +28,19 @@ export default function NavLinks() {
           </Link>
         </li>
       ))}
+      {/* Каталог бізнесу — грошовий продукт, акцентна синя пігулка (поза мапою). */}
+      <li className="flex items-center">
+        <Link
+          href="/kataloh"
+          className={`my-2 block whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-semibold text-white transition-colors ${
+            pathname.startsWith("/kataloh")
+              ? "bg-brand-800"
+              : "bg-brand-600 hover:bg-brand-700"
+          }`}
+        >
+          Каталог бізнесу
+        </Link>
+      </li>
     </ul>
   );
 }

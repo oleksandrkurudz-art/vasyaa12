@@ -26,12 +26,28 @@ export default function Footer() {
                   </Link>
                 </li>
               ))}
+              <li>
+                <Link
+                  href="/kataloh"
+                  className="font-semibold text-brand-700 hover:text-brand-800"
+                >
+                  Каталог бізнесу
+                </Link>
+              </li>
             </ul>
           </nav>
         </div>
-        <p className="mt-10 border-t border-neutral-200 pt-6 text-xs text-neutral-400">
-          © {new Date().getFullYear()} {SITE_NAME}. Усі права захищено.
-        </p>
+        <div className="mt-10 flex flex-col gap-3 border-t border-neutral-200 pt-6 text-xs text-neutral-400 sm:flex-row sm:items-center sm:justify-between">
+          <p>
+            © {new Date().getFullYear()} {SITE_NAME}. Усі права захищено.
+          </p>
+          <Link
+            href="/pryvatnist"
+            className="hover:text-brand-700"
+          >
+            Політика конфіденційності
+          </Link>
+        </div>
       </div>
     </footer>
   );

@@ -8,18 +8,18 @@ export const metadata = { title: "Адмінка" };
 export default async function AdminDashboard() {
   await requireAuth();
 
-  const [articles, published, ads, advertisers] = await Promise.all([
+  const [articles, published, ads, businesses] = await Promise.all([
     prisma.article.count(),
     prisma.article.count({ where: { status: "published" } }),
     prisma.ad.count(),
-    prisma.advertiser.count(),
+    prisma.business.count(),
   ]);
 
   const cards = [
     { label: "Усього новин", value: articles, href: "/admin/articles" },
     { label: "Опубліковано", value: published, href: "/admin/articles" },
     { label: "Рекламних банерів", value: ads, href: "/admin/ads" },
-    { label: "Рекламодавців", value: advertisers, href: "/admin/advertisers" },
+    { label: "Бізнесів у каталозі", value: businesses, href: "/admin/businesses" },
   ];
 
   return (
@@ -51,6 +51,12 @@ export default async function AdminDashboard() {
           className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-semibold text-white hover:bg-neutral-700"
         >
           + Новий банер
+        </Link>
+        <Link
+          href="/admin/businesses/new"
+          className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-semibold text-white hover:bg-neutral-700"
+        >
+          + Новий бізнес
         </Link>
       </div>
     </div>

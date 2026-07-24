@@ -14,10 +14,11 @@ Next.js 16 (App Router) · React 19 · TypeScript · Tailwind 4 · Prisma 7 (Pos
 Prisma 7: URL для міграцій у `prisma.config.ts`; рантайм-клієнт через driver-адаптер (`@prisma/adapter-pg`) у `src/lib/db.ts`. `DATABASE_URL` — connection string Postgres (Supabase «Session pooler»). Згенерований клієнт — `src/generated/prisma` (імпорт `@/generated/prisma/client`).
 
 ## Структура
-- `src/app/(public)/` — публічні сторінки (головна, `[category]`, `[category]/[slug]`) з шапкою/підвалом.
-- `src/app/admin/` — адмінка (логін, CRUD новин/реклами/рекламодавців). Серверні дії — `src/app/admin/actions.ts`.
-- `src/lib/ads.ts` — **рушій контекстної реклами** (score = збіг тегів×10 + збіг категорії×3, добір загальною рекламою).
-- `src/lib/categories.ts` — канонічний список 7 розділів (джерело для меню + seed).
+- `src/app/(public)/` — публічні сторінки (головна, `[category]`, `[category]/[slug]`, каталог `kataloh`/`kataloh/[slug]`) з шапкою/підвалом.
+- `src/app/admin/` — адмінка (логін, CRUD новин/реклами/бізнесів). Серверні дії — `src/app/admin/actions.ts`.
+- `src/lib/ads.ts` — **рушій контекстної реклами** (score = збіг тегів×10 + збіг категорії×3, добір загальною рекламою). Банер належить `Business` і за замовчуванням веде на його картку.
+- `src/lib/businesses.ts` + `src/lib/business-categories.ts` — каталог бізнесу (`/kataloh`): дата-шар, видимість (`active && paidUntil`), категорії.
+- `src/lib/categories.ts` — канонічний список розділів новин (джерело для меню + seed).
 - Теги зберігаються рядком через кому (`src/lib/tags.ts`) — формат лишився з SQLite-версії, рушій реклами на нього розрахований.
 
 ## Команди

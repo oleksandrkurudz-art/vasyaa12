@@ -45,7 +45,18 @@ async function compress(file: File): Promise<File> {
   });
 }
 
-export default function CoverUpload({ defaultUrl }: { defaultUrl?: string }) {
+export default function CoverUpload({
+  defaultUrl,
+  fileName = "coverFile",
+  urlName = "coverImage",
+  label = "Обкладинка",
+}: {
+  defaultUrl?: string;
+  // Імена полів форми — щоб той самий віджет обслуговував і фото бізнесу, і банер.
+  fileName?: string;
+  urlName?: string;
+  label?: string;
+}) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | undefined>(defaultUrl);
   const [note, setNote] = useState<string>("");
@@ -84,7 +95,7 @@ export default function CoverUpload({ defaultUrl }: { defaultUrl?: string }) {
   return (
     <div className="rounded-md border border-neutral-200 bg-neutral-50 p-4">
       <label className="block text-sm font-medium text-neutral-700">
-        Обкладинка
+        {label}
       </label>
 
       {preview && (
@@ -99,7 +110,7 @@ export default function CoverUpload({ defaultUrl }: { defaultUrl?: string }) {
       <input
         ref={fileRef}
         type="file"
-        name="coverFile"
+        name={fileName}
         accept="image/*"
         onChange={onPick}
         className="mt-2 block w-full text-sm text-neutral-700 file:mr-3 file:rounded-md file:border-0 file:bg-blue-700 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-blue-800"
@@ -120,7 +131,7 @@ export default function CoverUpload({ defaultUrl }: { defaultUrl?: string }) {
         …або вставте URL зображення
       </label>
       <input
-        name="coverImage"
+        name={urlName}
         defaultValue={defaultUrl ?? ""}
         placeholder="https://…"
         className={`mt-1 ${inputClass}`}

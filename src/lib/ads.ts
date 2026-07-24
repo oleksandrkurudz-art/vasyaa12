@@ -1,8 +1,9 @@
 import { prisma } from "@/lib/db";
 import { parseTags } from "@/lib/tags";
-import type { Ad, Advertiser } from "@/generated/prisma/client";
+import { isBusinessVisible } from "@/lib/businesses";
+import type { Ad, Business } from "@/generated/prisma/client";
 
-export type AdWithAdvertiser = Ad & { advertiser: Advertiser };
+export type AdWithBusiness = Ad & { business: Business };
 
 // Рівномірне перемішування (Фішер-Єйтс). `sort(() => Math.random() - 0.5)`
 // дає зміщений розподіл — деякі позиції випадали б частіше.
@@ -26,11 +27,14 @@ function shuffle<T>(arr: T[]): T[] {
 export async function getContextualAds(
   article: { tags: string; categoryId: number },
   limit = 3,
-): Promise<AdWithAdvertiser[]> {
-  const ads = await prisma.ad.findMany({
+): Promise<AdWithBusiness[]> {
+  const all = await prisma.ad.findMany({
     where: { active: true },
-    include: { advertiser: true },
+    include: { business: true },
   });
+  // Не показуємо банер, чий бізнес невидимий (прострочена/вимкнена картка) —
+  // щоб не вести платний трафік на 404.
+  const ads = all.filter((ad) => isBusinessVisible(ad.business));
 
   const articleTags = new Set(parseTags(article.tags));
 

@@ -3,7 +3,8 @@
 import { useActionState } from "react";
 import Link from "next/link";
 import { saveAd, type FormState } from "@/app/admin/actions";
-import type { Ad, Advertiser, Category } from "@/generated/prisma/client";
+import CoverUpload from "@/components/admin/CoverUpload";
+import type { Ad, Category } from "@/generated/prisma/client";
 
 const inputClass =
   "w-full rounded-md border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-blue-500";
@@ -11,11 +12,11 @@ const labelClass = "block text-sm font-medium text-neutral-700";
 
 export default function AdForm({
   ad,
-  advertisers,
+  businesses,
   categories,
 }: {
   ad?: Ad;
-  advertisers: Advertiser[];
+  businesses: { id: number; name: string }[];
   categories: Category[];
 }) {
   const [state, formAction, pending] = useActionState<FormState, FormData>(
@@ -24,7 +25,7 @@ export default function AdForm({
   );
 
   return (
-    <form action={formAction} className="space-y-5">
+    <form action={formAction} encType="multipart/form-data" className="space-y-5">
       {ad && <input type="hidden" name="id" value={ad.id} />}
 
       <div>
@@ -38,42 +39,38 @@ export default function AdForm({
       </div>
 
       <div>
-        <label className={labelClass}>Рекламодавець</label>
+        <label className={labelClass}>Бізнес (кому належить банер)</label>
         <select
-          name="advertiserId"
+          name="businessId"
           required
-          defaultValue={ad?.advertiserId}
+          defaultValue={ad?.businessId}
           className={`mt-1 ${inputClass}`}
         >
-          {advertisers.map((a) => (
-            <option key={a.id} value={a.id}>
-              {a.name} ({a.type})
+          {businesses.map((b) => (
+            <option key={b.id} value={b.id}>
+              {b.name}
             </option>
           ))}
         </select>
       </div>
 
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-        <div>
-          <label className={labelClass}>URL зображення</label>
-          <input
-            name="imageUrl"
-            required
-            defaultValue={ad?.imageUrl}
-            placeholder="https://…"
-            className={`mt-1 ${inputClass}`}
-          />
-        </div>
-        <div>
-          <label className={labelClass}>Посилання (куди веде банер)</label>
-          <input
-            name="linkUrl"
-            required
-            defaultValue={ad?.linkUrl}
-            placeholder="https://…"
-            className={`mt-1 ${inputClass}`}
-          />
-        </div>
+      <CoverUpload
+        fileName="bannerFile"
+        urlName="imageUrl"
+        label="Зображення банера"
+        defaultUrl={ad?.imageUrl}
+      />
+
+      <div>
+        <label className={labelClass}>
+          Зовнішнє посилання (необов’язково — порожнє веде на картку бізнесу)
+        </label>
+        <input
+          name="linkUrl"
+          defaultValue={ad?.linkUrl}
+          placeholder="https://… або лишіть порожнім"
+          className={`mt-1 ${inputClass}`}
+        />
       </div>
 
       <div>

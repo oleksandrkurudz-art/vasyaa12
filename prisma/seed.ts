@@ -3,6 +3,7 @@ import { PrismaClient } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { CATEGORIES } from "../src/lib/categories";
 import { COMMUNITIES } from "../src/lib/communities";
+import { slugify } from "../src/lib/slug";
 
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL,
@@ -18,7 +19,7 @@ async function main() {
 
   // Очистка (порядок через FK).
   await prisma.ad.deleteMany();
-  await prisma.advertiser.deleteMany();
+  await prisma.business.deleteMany();
   await prisma.article.deleteMany();
   await prisma.category.deleteMany();
   await prisma.community.deleteMany();
@@ -43,80 +44,150 @@ async function main() {
     communities[c.slug] = created.id;
   }
 
-  // 2) Рекламодавці + банери
-  const advertisers = [
+  // 2) Бізнеси (каталог /kataloh) + банери
+  const day = 86400000;
+  const businesses: Array<{
+    name: string;
+    category: string; // slug з BUSINESS_CATEGORIES
+    community?: string; // slug громади; без поля = весь район
+    phone?: string;
+    address?: string;
+    website?: string;
+    description: string;
+    tags: string;
+    img: string;
+    active?: boolean; // за замовчуванням true
+    paidDays?: number; // «оплачено до» = зараз + paidDays (від'ємне = прострочено)
+    ad?: { title: string; tags: string; category: string }; // прив'язаний банер
+  }> = [
     {
       name: 'Будмаркет «Майстер»',
-      type: "будмагазин",
+      category: "budivnytstvo",
+      community: "broshniv-osadska",
+      phone: "+380 67 123 45 67",
+      address: "смт Брошнів-Осада, вул. Січових Стрільців, 12",
+      description:
+        "Усе для ремонту та будівництва: матеріали, інструмент, фарби. Доставка по громаді.",
+      tags: "ремонт, будівництво, дорога, інфраструктура",
+      img: img("budmarket", 800, 600),
       ad: {
         title: "Все для ремонту та будівництва — знижки до 20%",
         tags: "ремонт, будівництво, дорога, інфраструктура",
         category: "novyny",
-        img: img("budmarket", 400, 300),
       },
     },
     {
       name: 'АЗС «Паливо+»',
-      type: "АЗС",
-      ad: {
-        title: "Якісне пальне за вигідними цінами",
-        tags: "транспорт, дорога, пальне",
-        category: "novyny",
-        img: img("azs", 400, 300),
-      },
+      category: "avto",
+      phone: "+380 50 222 33 44",
+      address: "траса Долина–Калуш, 5 км",
+      description: "Якісне пальне, автомийка та кава на виніс цілодобово.",
+      tags: "транспорт, дорога, пальне, авто",
+      img: img("azs", 800, 600),
     },
     {
       name: 'Кафе «Затишок»',
-      type: "кафе",
+      category: "kafe-restorany",
+      community: "kaluska",
+      phone: "+380 97 555 66 77",
+      address: "м. Калуш, вул. Грушевського, 8",
+      description:
+        "Свіжа випічка, ароматна кава та домашні обіди щодня. Затишний зал для родинного відпочинку.",
+      tags: "кафе, їжа, кава, відпочинок, родина",
+      img: img("cafe", 800, 600),
       ad: {
         title: "Кава та свіжа випічка щодня",
         tags: "кафе, їжа, відпочинок, родина",
         category: "afisha",
-        img: img("cafe", 400, 300),
-      },
-    },
-    {
-      name: '«ГромадаБанк»',
-      type: "банк",
-      ad: {
-        title: "Кредит на розвиток бізнесу — від 0,01%",
-        tags: "бізнес, фінанси, бюджет",
-        category: "biznes",
-        img: img("bank", 400, 300),
       },
     },
     {
       name: 'Аптека «Здоров’я»',
-      type: "аптека",
-      ad: {
-        title: "Знижки на ліки для всієї родини",
-        tags: "аптека, здоров'я, родина",
-        category: "novyny",
-        img: img("pharmacy", 400, 300),
-      },
+      category: "medytsyna",
+      community: "dolynska",
+      phone: "+380 66 888 99 00",
+      address: "м. Долина, вул. Незалежності, 21",
+      description: "Ліки, вітаміни та товари для здоров'я всієї родини.",
+      tags: "аптека, здоров'я, родина, ліки",
+      img: img("pharmacy", 800, 600),
+    },
+    {
+      name: 'Салон краси «Орхідея»',
+      category: "krasa",
+      community: "kaluska",
+      phone: "+380 63 111 22 33",
+      address: "м. Калуш, вул. Франка, 3",
+      description: "Перукарські послуги, манікюр, косметологія. Запис за телефоном.",
+      tags: "краса, перукарня, манікюр",
+      img: img("salon", 800, 600),
+    },
+    {
+      name: 'Магазин «Село-маркет»',
+      category: "torhivlia",
+      community: "perehinska",
+      phone: "+380 68 444 55 66",
+      address: "смт Перегінське, вул. Центральна, 47",
+      description: "Продукти, побутові товари та свіжий хліб у центрі селища.",
+      tags: "магазин, продукти, торгівля",
+      img: img("shop", 800, 600),
+    },
+    // Демонстрація фільтра видимості:
+    {
+      name: 'Ферма «Зелений лан»',
+      category: "silske",
+      community: "vyhodska",
+      phone: "+380 95 777 88 99",
+      description: "Свіжі овочі, молочка та мед напряму від господарства.",
+      tags: "ферма, овочі, мед",
+      img: img("farm", 800, 600),
+      paidDays: -3, // прострочено — не показується в каталозі
+    },
+    {
+      name: 'Автосервіс «Гараж»',
+      category: "avto",
+      community: "kaluska",
+      phone: "+380 50 000 11 22",
+      description: "Ремонт та обслуговування авто. Тимчасово вимкнено.",
+      tags: "авто, сервіс, ремонт",
+      img: img("garage", 800, 600),
+      active: false, // вимкнено — не показується
     },
   ];
 
-  for (const a of advertisers) {
-    const advertiser = await prisma.advertiser.create({
-      data: { name: a.name, type: a.type },
-    });
-    await prisma.ad.create({
+  for (const b of businesses) {
+    const business = await prisma.business.create({
       data: {
-        title: a.ad.title,
-        imageUrl: a.ad.img,
-        linkUrl: "https://example.com",
-        tags: a.ad.tags,
-        active: true,
-        advertiserId: advertiser.id,
-        categoryId: categories[a.ad.category] ?? null,
+        slug: slugify(b.name),
+        name: b.name,
+        description: b.description,
+        category: b.category,
+        phone: b.phone ?? null,
+        address: b.address ?? null,
+        website: b.website ?? null,
+        photo: b.img,
+        tags: b.tags,
+        active: b.active ?? true,
+        paidUntil: b.paidDays !== undefined ? new Date(Date.now() + b.paidDays * day) : null,
+        communityId: b.community ? communities[b.community] : null,
       },
     });
+    if (b.ad) {
+      await prisma.ad.create({
+        data: {
+          title: b.ad.title,
+          imageUrl: img(slugify(b.name) + "-ad", 400, 300),
+          linkUrl: "", // порожнє — банер веде на картку бізнесу
+          tags: b.ad.tags,
+          active: true,
+          businessId: business.id,
+          categoryId: categories[b.ad.category] ?? null,
+        },
+      });
+    }
   }
 
   // 3) Новини
   const now = Date.now();
-  const day = 86400000;
   const articles: Array<{
     slug: string;
     category: string;
@@ -225,7 +296,7 @@ async function main() {
   }
 
   console.log(
-    `Готово: ${CATEGORIES.length} розділів, ${advertisers.length} рекламодавців, ${articles.length} новин.`,
+    `Готово: ${CATEGORIES.length} розділів, ${businesses.length} бізнесів, ${articles.length} новин.`,
   );
 }
 

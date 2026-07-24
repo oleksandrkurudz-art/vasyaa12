@@ -8,19 +8,22 @@ export const metadata = { title: "Новий банер · Адмінка" };
 
 export default async function NewAd() {
   await requireAuth();
-  const [advertisers, categories] = await Promise.all([
-    prisma.advertiser.findMany({ orderBy: { name: "asc" } }),
+  const [businesses, categories] = await Promise.all([
+    prisma.business.findMany({
+      orderBy: { name: "asc" },
+      select: { id: true, name: true },
+    }),
     prisma.category.findMany({ orderBy: { order: "asc" } }),
   ]);
 
-  if (advertisers.length === 0) {
+  if (businesses.length === 0) {
     return (
       <div className="mx-auto max-w-2xl">
         <h1 className="mb-4 text-2xl font-bold text-neutral-900">Новий банер</h1>
         <p className="text-neutral-600">
-          Спочатку додайте хоча б одного{" "}
-          <Link href="/admin/advertisers" className="text-blue-700 underline">
-            рекламодавця
+          Спочатку додайте хоча б один{" "}
+          <Link href="/admin/businesses" className="text-blue-700 underline">
+            бізнес
           </Link>
           .
         </p>
@@ -31,7 +34,7 @@ export default async function NewAd() {
   return (
     <div className="mx-auto max-w-2xl">
       <h1 className="mb-6 text-2xl font-bold text-neutral-900">Новий банер</h1>
-      <AdForm advertisers={advertisers} categories={categories} />
+      <AdForm businesses={businesses} categories={categories} />
     </div>
   );
 }

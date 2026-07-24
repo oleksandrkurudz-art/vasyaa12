@@ -102,6 +102,20 @@ export default function MobileMenu({
                 </li>
               );
             })}
+            {/* Каталог бізнесу — окремо, відділений лінією (грошовий продукт). */}
+            <li className="mt-1.5 border-t border-white/10 pt-1.5">
+              <Link
+                href="/kataloh"
+                onClick={() => setOpen(false)}
+                className={`flex items-center border-l-[3px] px-4 py-3 text-[0.95rem] font-semibold transition-colors ${
+                  pathname.startsWith("/kataloh")
+                    ? "border-brand-500 bg-white/10 text-white"
+                    : "border-transparent text-white hover:bg-white/5"
+                }`}
+              >
+                Каталог бізнесу
+              </Link>
+            </li>
           </ul>
         </div>
       </div>

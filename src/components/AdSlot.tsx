@@ -1,11 +1,14 @@
+import Link from "next/link";
 import Cover from "@/components/Cover";
-import type { AdWithAdvertiser } from "@/lib/ads";
+import type { AdWithBusiness } from "@/lib/ads";
 
 /**
  * Блок контекстної реклами поруч зі статтею.
  * Банери підбираються рушієм у `@/lib/ads`.
+ * За замовчуванням банер веде на картку бізнесу (/kataloh/{slug});
+ * якщо задано зовнішній linkUrl — на нього (у новій вкладці, sponsored).
  */
-export default function AdSlot({ ads }: { ads: AdWithAdvertiser[] }) {
+export default function AdSlot({ ads }: { ads: AdWithBusiness[] }) {
   if (ads.length === 0) return null;
 
   return (
@@ -13,34 +16,50 @@ export default function AdSlot({ ads }: { ads: AdWithAdvertiser[] }) {
       <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
         Реклама
       </p>
-      {ads.map((ad) => (
-        <a
-          key={ad.id}
-          href={ad.linkUrl}
-          target="_blank"
-          rel="noopener noreferrer sponsored"
-          className="group block overflow-hidden rounded-lg border border-neutral-200 bg-white transition-shadow hover:shadow-md"
-        >
-          <div className="relative aspect-[4/3] overflow-hidden bg-neutral-100">
-            <Cover
-              src={ad.imageUrl}
-              alt={ad.title}
-              sizes="(max-width: 1024px) 100vw, 300px"
-              imgClassName="object-cover transition-transform duration-300 group-hover:scale-105"
-            />
-            {/* Бейдж прозорості: кожен банер окремо позначено як рекламу. */}
-            <span className="absolute left-2 top-2 rounded bg-black/65 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white backdrop-blur-sm">
-              Реклама
-            </span>
-          </div>
-          <div className="p-3">
-            <p className="text-sm font-semibold text-neutral-900">{ad.title}</p>
-            <p className="mt-0.5 text-xs text-neutral-500">
-              {ad.advertiser.name}
-            </p>
-          </div>
-        </a>
-      ))}
+      {ads.map((ad) => {
+        const href = ad.linkUrl || `/kataloh/${ad.business.slug}`;
+        const internal = href.startsWith("/");
+        const cardClass =
+          "group block overflow-hidden rounded-lg border border-neutral-200 bg-white transition-shadow hover:shadow-md";
+        const inner = (
+          <>
+            <div className="relative aspect-[4/3] overflow-hidden bg-neutral-100">
+              <Cover
+                src={ad.imageUrl}
+                alt={ad.title}
+                sizes="(max-width: 1024px) 100vw, 300px"
+                imgClassName="object-cover transition-transform duration-300 group-hover:scale-105"
+              />
+              {/* Бейдж прозорості: кожен банер окремо позначено як рекламу. */}
+              <span className="absolute left-2 top-2 rounded bg-black/65 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white backdrop-blur-sm">
+                Реклама
+              </span>
+            </div>
+            <div className="p-3">
+              <p className="text-sm font-semibold text-neutral-900">{ad.title}</p>
+              <p className="mt-0.5 text-xs text-neutral-500">
+                {ad.business.name}
+              </p>
+            </div>
+          </>
+        );
+
+        return internal ? (
+          <Link key={ad.id} href={href} className={cardClass}>
+            {inner}
+          </Link>
+        ) : (
+          <a
+            key={ad.id}
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer sponsored"
+            className={cardClass}
+          >
+            {inner}
+          </a>
+        );
+      })}
     </aside>
   );
 }

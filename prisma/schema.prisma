@@ -23,11 +23,12 @@ model Category {
 // Громада (Долинська, Брошнів-Осадська, Вигодська, Перегінська, Калуська).
 // Новина без громади (communityId = null) вважається загальнорайонною.
 model Community {
-  id       Int       @id @default(autoincrement())
-  slug     String    @unique
-  name     String
-  order    Int       @default(0)
-  articles Article[]
+  id         Int        @id @default(autoincrement())
+  slug       String     @unique
+  name       String
+  order      Int        @default(0)
+  articles   Article[]
+  businesses Business[]
 }
 
 // Новина / стаття
@@ -57,29 +58,49 @@ model Article {
   @@index([communityId])
 }
 
-// Рекламодавець (місцевий бізнес)
-model Advertiser {
-  id        Int      @id @default(autoincrement())
-  name      String
-  type      String // будмагазин | АЗС | кафе | банк | аптека | інше
-  ads       Ad[]
-  createdAt DateTime @default(now())
+// Бізнес — єдина сутність: картка в каталозі /kataloh + власник рекламних банерів.
+model Business {
+  id          Int        @id @default(autoincrement())
+  slug        String     @unique
+  name        String
+  description String     @default("")
+  // Категорія бізнесу — slug зі списку BUSINESS_CATEGORIES (src/lib/business-categories.ts)
+  category    String     @default("inshe")
+  phone       String?
+  address     String?
+  website     String?
+  photo       String?
+  // Теги через кому — синергія з рушієм реклами
+  tags        String     @default("")
+  active      Boolean    @default(true)
+  // Оплачено до (кінець дня включно); null = безстроково. Прострочені ховаються з сайту.
+  paidUntil   DateTime?
+  // Громада бізнесу; null = весь район
+  communityId Int?
+  community   Community? @relation(fields: [communityId], references: [id])
+  ads         Ad[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([active, category])
+  @@index([communityId])
 }
 
-// Рекламний банер
+// Рекламний банер. Належить бізнесу й за замовчуванням веде на його картку.
 model Ad {
-  id           Int        @id @default(autoincrement())
-  title        String
-  imageUrl     String
-  linkUrl      String
+  id         Int       @id @default(autoincrement())
+  title      String
+  imageUrl   String
+  // Опційне зовнішнє посилання; порожнє = банер веде на картку бізнесу /kataloh/{slug}
+  linkUrl    String    @default("")
   // Теги через кому — за ними рушій підбирає рекламу до статті
-  tags         String     @default("")
-  active       Boolean    @default(true)
-  advertiserId Int
-  advertiser   Advertiser @relation(fields: [advertiserId], references: [id])
-  categoryId   Int?
-  category     Category?  @relation(fields: [categoryId], references: [id])
-  createdAt    DateTime   @default(now())
+  tags       String    @default("")
+  active     Boolean   @default(true)
+  businessId Int
+  business   Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  categoryId Int?
+  category   Category? @relation(fields: [categoryId], references: [id])
+  createdAt  DateTime  @default(now())
 
   @@index([active])
 }

@@ -11,7 +11,7 @@ export const metadata = { title: "Реклама · Адмінка" };
 export default async function AdminAds() {
   await requireAuth();
   const ads = await prisma.ad.findMany({
-    include: { advertiser: true, category: true },
+    include: { business: true, category: true },
     orderBy: { createdAt: "desc" },
   });
 
@@ -55,7 +55,7 @@ export default async function AdminAds() {
                 )}
               </div>
               <p className="mt-0.5 text-sm text-neutral-500">
-                {ad.advertiser.name}
+                {ad.business.name}
               </p>
               <div className="mt-2 flex flex-wrap gap-1">
                 {parseTags(ad.tags).map((t) => (
