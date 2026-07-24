@@ -1,6 +1,6 @@
-import Link from "next/link";
 import Logo from "@/components/Logo";
 import CommunitySwitcher from "@/components/CommunitySwitcher";
+import HeaderSearch from "@/components/HeaderSearch";
 import MobileMenu from "@/components/MobileMenu";
 import { getRates, formatRate } from "@/lib/rates";
 import { getActiveCommunity, getCommunities } from "@/lib/community-filter";
@@ -33,6 +33,23 @@ export default async function Header() {
           <span className="whitespace-nowrap text-xs text-neutral-400 sm:border-l sm:border-white/15 sm:pl-3">
             <span className="uppercase">{weekday}</span>, {dayMonth}
           </span>
+
+          {/* Курси на телефоні — компактно біля дати, лише символ валюти (без прапорів) */}
+          <span className="flex items-center gap-2 whitespace-nowrap text-xs tabular-nums text-neutral-400 sm:hidden">
+            <span aria-hidden className="h-3 w-px bg-white/15" />
+            <span className="flex items-baseline gap-0.5">
+              <span className="text-neutral-500">$</span>
+              <span className="font-semibold text-neutral-200">
+                {formatRate(rates.usd)}
+              </span>
+            </span>
+            <span className="flex items-baseline gap-0.5">
+              <span className="text-neutral-500">€</span>
+              <span className="font-semibold text-neutral-200">
+                {formatRate(rates.eur)}
+              </span>
+            </span>
+          </span>
         </div>
 
         <div className="flex items-center gap-3">
@@ -44,42 +61,33 @@ export default async function Header() {
             />
           </div>
 
-          {/* Курси валют — маленькі картки з прапорами */}
-          <div className="hidden items-center gap-2 sm:flex">
-            <span className="flex items-center gap-1.5 rounded-md bg-white/10 px-2 py-1 text-xs">
+          {/* Курси валют НБУ — компактний тікер без «коробки» */}
+          <div className="hidden items-center gap-3 text-xs tabular-nums sm:flex">
+            <span className="flex items-baseline gap-1.5">
               <span aria-hidden>🇺🇸</span>
+              <span className="text-[11px] font-medium uppercase tracking-wide text-neutral-400">
+                USD
+              </span>
               <span className="font-semibold text-white">
                 {formatRate(rates.usd)}
               </span>
+              <span className="text-neutral-500">₴</span>
             </span>
-            <span className="flex items-center gap-1.5 rounded-md bg-white/10 px-2 py-1 text-xs">
+            <span aria-hidden className="h-3.5 w-px bg-white/15" />
+            <span className="flex items-baseline gap-1.5">
               <span aria-hidden>🇪🇺</span>
+              <span className="text-[11px] font-medium uppercase tracking-wide text-neutral-400">
+                EUR
+              </span>
               <span className="font-semibold text-white">
                 {formatRate(rates.eur)}
               </span>
+              <span className="text-neutral-500">₴</span>
             </span>
           </div>
 
-          {/* Пошук — пігулка з іконкою та підписом */}
-          <Link
-            href="/search"
-            aria-label="Пошук новин"
-            className="flex items-center gap-1.5 rounded-full border border-white/20 px-3 py-1.5 text-xs font-medium text-neutral-300 transition-colors hover:border-white/40 hover:bg-white/5 hover:text-white"
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              aria-hidden
-            >
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.3-4.3" />
-            </svg>
-            <span className="hidden sm:inline">Пошук</span>
-          </Link>
+          {/* Пошук — інлайн у шапці (розгортається по кліку, без окремої сторінки) */}
+          <HeaderSearch />
 
           {/* Бургер — лише на телефоні (розділи + громада) */}
           <MobileMenu

@@ -1,15 +1,13 @@
 import Link from "next/link";
 import { getPopularArticles } from "@/lib/articles";
 import { formatViews, hasEnoughViews } from "@/lib/format";
-import { getRates, formatRateUk } from "@/lib/rates";
 import { getWeather } from "@/lib/weather";
 
 export default async function Sidebar() {
-  // Усі три джерела незалежні — тягнемо паралельно.
-  const [popular, weather, rates] = await Promise.all([
+  // Обидва джерела незалежні — тягнемо паралельно.
+  const [popular, weather] = await Promise.all([
     getPopularArticles(5),
     getWeather(),
-    getRates(),
   ]);
 
   return (
@@ -70,34 +68,6 @@ export default async function Sidebar() {
             )}
           </div>
         )}
-      </section>
-
-      {/* Курси валют — офіційний курс НБУ */}
-      <section className="rounded-xl border border-neutral-200 bg-white p-5">
-        <h2 className="font-display text-lg font-bold text-neutral-900">
-          Курси валют
-        </h2>
-        <table className="mt-3 w-full text-sm">
-          <tbody className="divide-y divide-neutral-100">
-            <tr>
-              <td className="py-2 font-semibold text-neutral-700">USD</td>
-              <td className="py-2 text-right text-neutral-500">$1</td>
-              <td className="py-2 text-right font-medium text-neutral-900">
-                {formatRateUk(rates.usd)} ₴
-              </td>
-            </tr>
-            <tr>
-              <td className="py-2 font-semibold text-neutral-700">EUR</td>
-              <td className="py-2 text-right text-neutral-500">€1</td>
-              <td className="py-2 text-right font-medium text-neutral-900">
-                {formatRateUk(rates.eur)} ₴
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <p className="mt-2 text-xs text-neutral-400">
-          {rates.fallback ? "Орієнтовні значення" : "Офіційний курс НБУ"}
-        </p>
       </section>
     </aside>
   );

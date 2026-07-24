@@ -24,6 +24,13 @@ export const CATEGORIES: CategoryDef[] = [
 //  onDark — текст-підпис на темному тлі (другорядні в героєві);
 //  text   — кольоровий текст (активний пункт меню, eyebrow);
 //  border — кольоровий акцент-бордюр (шапка розділу, активний пункт меню).
+//
+// Стратегія кольору (маркетинг): бренд = ОДИН синій. Уся структура й акценти
+// (герой, шапка розділу, активне меню, eyebrow) — завжди брендовий синій, щоб
+// сайт мав впізнаваний колір і платні блоки/CTA мали на чому виділятися.
+// Колір розділу лишається ЛИШЕ у дрібному `badge`-чипі — як тиха мітка для
+// сканування стрічки, а не як декор на пів-екрана. Тому solid/onDark/text/border
+// однакові (сині) для всіх розділів; відрізняється тільки `badge`.
 export type CategoryStyle = {
   badge: string;
   solid: string;
@@ -32,69 +39,39 @@ export type CategoryStyle = {
   border: string;
 };
 
+// Брендові (сині) частини — спільні для всіх розділів. Літерали лишаються в
+// коді, тож сканер Tailwind їх бачить.
+const BRAND: Omit<CategoryStyle, "badge"> = {
+  solid: "bg-brand-600 text-white",
+  onDark: "text-brand-300",
+  text: "text-brand-700",
+  border: "border-brand-600",
+};
+
 export const CATEGORY_STYLES: Record<string, CategoryStyle> = {
-  novyny: {
-    badge: "bg-brand-50 text-brand-700 hover:bg-brand-100",
-    solid: "bg-brand-600 text-white",
-    onDark: "text-brand-300",
-    text: "text-brand-700",
-    border: "border-brand-600",
-  },
+  novyny: { ...BRAND, badge: "bg-brand-50 text-brand-700 hover:bg-brand-100" },
   polityka: {
+    ...BRAND,
     badge: "bg-violet-50 text-violet-700 hover:bg-violet-100",
-    solid: "bg-violet-600 text-white",
-    onDark: "text-violet-300",
-    text: "text-violet-700",
-    border: "border-violet-600",
   },
   biznes: {
-    badge: "bg-teal-50 text-teal-700 hover:bg-teal-100",
-    solid: "bg-teal-600 text-white",
-    onDark: "text-teal-300",
-    text: "text-teal-700",
-    border: "border-teal-600",
+    ...BRAND,
+    badge: "bg-emerald-50 text-emerald-700 hover:bg-emerald-100",
   },
   afisha: {
-    badge: "bg-pink-50 text-pink-700 hover:bg-pink-100",
-    solid: "bg-pink-600 text-white",
-    onDark: "text-pink-300",
-    text: "text-pink-700",
-    border: "border-pink-600",
+    ...BRAND,
+    badge: "bg-fuchsia-50 text-fuchsia-700 hover:bg-fuchsia-100",
   },
-  vakansii: {
-    badge: "bg-amber-50 text-amber-700 hover:bg-amber-100",
-    solid: "bg-amber-600 text-white",
-    onDark: "text-amber-300",
-    text: "text-amber-700",
-    border: "border-amber-600",
-  },
+  vakansii: { ...BRAND, badge: "bg-amber-50 text-amber-700 hover:bg-amber-100" },
   ogoloshennya: {
+    ...BRAND,
     badge: "bg-orange-50 text-orange-700 hover:bg-orange-100",
-    solid: "bg-orange-600 text-white",
-    onDark: "text-orange-300",
-    text: "text-orange-700",
-    border: "border-orange-600",
   },
-  foto: {
-    badge: "bg-green-50 text-green-700 hover:bg-green-100",
-    solid: "bg-green-600 text-white",
-    onDark: "text-green-300",
-    text: "text-green-700",
-    border: "border-green-600",
-  },
-  lyudy: {
-    badge: "bg-sky-50 text-sky-700 hover:bg-sky-100",
-    solid: "bg-sky-600 text-white",
-    onDark: "text-sky-300",
-    text: "text-sky-700",
-    border: "border-sky-600",
-  },
+  foto: { ...BRAND, badge: "bg-cyan-50 text-cyan-700 hover:bg-cyan-100" },
+  lyudy: { ...BRAND, badge: "bg-rose-50 text-rose-700 hover:bg-rose-100" },
   nekrolohy: {
+    ...BRAND,
     badge: "bg-slate-100 text-slate-700 hover:bg-slate-200",
-    solid: "bg-slate-600 text-white",
-    onDark: "text-slate-300",
-    text: "text-slate-700",
-    border: "border-slate-600",
   },
 };
 

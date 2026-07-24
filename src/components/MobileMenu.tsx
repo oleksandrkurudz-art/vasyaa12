@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CATEGORIES, categoryStyle } from "@/lib/categories";
-import CommunitySwitcher from "@/components/CommunitySwitcher";
+import { CATEGORIES } from "@/lib/categories";
+import CommunityChips from "@/components/CommunityChips";
 import type { Community } from "@/generated/prisma/client";
 
 // Мобільне меню (бургер) у шапці: розділи + перемикач громади.
@@ -38,9 +38,6 @@ export default function MobileMenu({
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
-  // bg-колір крапки-маркера розділу (перший клас `solid` — літеральний).
-  const dotColor = (slug: string) => categoryStyle(slug).solid.split(" ")[0];
-
   return (
     <div className="sm:hidden">
       <button
@@ -54,36 +51,35 @@ export default function MobileMenu({
         <BurgerIcon open={open} />
       </button>
 
-      {/* Затемнення — клік закриває */}
+      {/* Затемнення — під шапкою (не накриває бургер/хрестик), клік закриває */}
       {open && (
         <button
           type="button"
           aria-hidden
           tabIndex={-1}
           onClick={() => setOpen(false)}
-          className="fixed inset-0 z-30 cursor-default bg-black/30 backdrop-blur-[1px]"
+          className="absolute inset-x-0 top-full z-30 h-screen cursor-default bg-black/30 backdrop-blur-[1px]"
         />
       )}
 
-      {/* Випадне меню — плавне розкриття під шапкою */}
+      {/* Випадне меню — темно-прозоре, як дропдаун громади на ПК. Плавне розкриття. */}
       <div
         id="mobile-nav"
-        className={`absolute inset-x-0 top-full z-40 origin-top overflow-hidden border-neutral-200 bg-white text-neutral-900 shadow-xl transition-all duration-200 ease-out ${
+        className={`absolute inset-x-0 top-full z-40 origin-top overflow-hidden bg-neutral-900/90 text-white shadow-2xl ring-1 ring-white/10 backdrop-blur-md transition-all duration-200 ease-out ${
           open
-            ? "max-h-[80vh] border-b opacity-100"
+            ? "max-h-[80vh] opacity-100"
             : "pointer-events-none max-h-0 opacity-0"
         }`}
       >
         <div className="max-h-[80vh] overflow-y-auto overscroll-contain">
-          {/* Перемикач громади */}
-          <div className="flex items-center gap-2 border-b border-neutral-200 bg-neutral-50 px-4 py-3">
-            <span className="text-xs font-semibold text-neutral-500">
-              Громада:
+          {/* Вибір громади — інлайн-чипи (без вкладеного дропдауна) */}
+          <div className="border-b border-white/10 px-4 py-3">
+            <span className="mb-2 block text-xs font-semibold uppercase tracking-wide text-neutral-400">
+              Громада
             </span>
-            <CommunitySwitcher
+            <CommunityChips
               communities={communities}
               activeSlug={activeCommunitySlug}
-              variant="light"
             />
           </div>
 
@@ -95,16 +91,12 @@ export default function MobileMenu({
                   <Link
                     href={`/${c.slug}`}
                     onClick={() => setOpen(false)}
-                    className={`flex items-center gap-3 border-l-[3px] px-4 py-3 text-[0.95rem] font-semibold transition-colors ${
+                    className={`flex items-center border-l-[3px] px-4 py-3 text-[0.95rem] font-semibold transition-colors ${
                       active
-                        ? `${categoryStyle(c.slug).border} ${categoryStyle(c.slug).badge}`
-                        : "border-transparent text-neutral-700 hover:bg-neutral-100 active:bg-neutral-100"
+                        ? "border-brand-500 bg-white/10 text-white"
+                        : "border-transparent text-white hover:bg-white/5"
                     }`}
                   >
-                    <span
-                      className={`h-2 w-2 shrink-0 rounded-full ${dotColor(c.slug)}`}
-                      aria-hidden
-                    />
                     {c.name}
                   </Link>
                 </li>
