@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { CATEGORIES, categoryStyle } from "@/lib/categories";
+import { CATEGORIES, categoryStyle, SITE_NAME } from "@/lib/categories";
 
 // Горизонтальне меню розділів (десктоп/планшет). Priority+ навігація: скільки
 // розділів влазить у смугу — показуємо, решту ховаємо під кнопку «Ще ▾».
@@ -19,11 +19,15 @@ export default function NavLinks() {
   const rowRef = useRef<HTMLDivElement>(null);
   const measureRef = useRef<HTMLUListElement>(null);
   const catalogRef = useRef<HTMLDivElement>(null);
+  const logoRef = useRef<HTMLDivElement>(null);
   const moreRef = useRef<HTMLDivElement>(null);
   const widthsRef = useRef<number[]>([]);
 
   const [visibleCount, setVisibleCount] = useState(CATEGORIES.length);
   const [moreOpen, setMoreOpen] = useState(false);
+  // Коли темна шапка з лого прокручена вгору — показуємо компактне лого прямо
+  // в липкій смузі розділів (лого «спускається» до категорій).
+  const [scrolled, setScrolled] = useState(false);
 
   // Перерахунок кількості видимих розділів під поточну ширину смуги.
   function recalc() {
@@ -33,16 +37,18 @@ export default function NavLinks() {
 
     const total = row.clientWidth;
     const catalogW = catalogRef.current?.offsetWidth ?? 0;
+    // Лого з'являється при скролі й забирає місце зліва — враховуємо його ширину.
+    const logoW = logoRef.current?.offsetWidth ?? 0;
 
     // Чи влазять усі розділи без кнопки «Ще»?
     const sumAll = widths.reduce((a, w, i) => a + w + (i > 0 ? GAP : 0), 0);
-    if (sumAll + GAP + catalogW <= total) {
+    if (sumAll + GAP + catalogW + logoW <= total) {
       setVisibleCount(widths.length);
       return;
     }
 
     // Інакше резервуємо місце під «Ще» і рахуємо, скільки влазить.
-    const avail = total - catalogW - GAP - MORE_W;
+    const avail = total - catalogW - logoW - GAP - MORE_W;
     let used = 0;
     let count = 0;
     for (let i = 0; i < widths.length; i++) {
@@ -81,6 +87,22 @@ export default function NavLinks() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Слухаємо скрол: щойно сторінка проїхала повз шапку — вмикаємо компактне лого.
+  useEffect(() => {
+    const THRESHOLD = 48; // ~висота, після якої темна шапка вже поза екраном
+    const onScroll = () => setScrolled(window.scrollY > THRESHOLD);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Поява/зникнення лого міняє доступну ширину — перераховуємо overflow.
+  useEffect(() => {
+    const raf = requestAnimationFrame(recalc);
+    return () => cancelAnimationFrame(raf);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scrolled]);
+
   // Закриття «Ще» по кліку поза меню / Escape / зміні сторінки.
   useEffect(() => setMoreOpen(false), [pathname]);
   useEffect(() => {
@@ -114,6 +136,30 @@ export default function NavLinks() {
 
   return (
     <div ref={rowRef} className="relative flex items-center gap-1">
+      {/* Компактне лого «спускається» в смугу розділів при скролі. Схлопнуте до
+          нульової ширини, поки шапка на екрані, — тоді категорії тримають лівий край. */}
+      <div
+        ref={logoRef}
+        className={`overflow-hidden transition-all duration-300 ease-out ${
+          scrolled ? "mr-2 w-9 opacity-100" : "w-0 opacity-0"
+        }`}
+      >
+        <Link
+          href="/"
+          aria-label={SITE_NAME}
+          className={`flex h-9 w-9 items-center justify-center transition-transform duration-300 ease-out ${
+            scrolled ? "translate-y-0" : "-translate-y-full"
+          }`}
+        >
+          <span className="relative inline-flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 shadow-sm ring-1 ring-inset ring-white/20">
+            <span className="font-display text-lg font-black leading-none text-white">
+              Г
+            </span>
+            <span className="absolute inset-x-1 bottom-[2px] h-[2px] rounded-full bg-white/55" />
+          </span>
+        </Link>
+      </div>
+
       {/* Видимі розділи */}
       <ul className="flex items-center gap-1">
         {visible.map((c) => (
