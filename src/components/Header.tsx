@@ -21,72 +21,58 @@ export default async function Header() {
     month: "long",
   }).format(now);
 
+  const dateLabel = (
+    <>
+      <span className="uppercase">{weekday}</span>, {dayMonth}
+    </>
+  );
+  // Компактний курс: символ валюти + значення (без прапорів, приглушено).
+  const rate = (symbol: string, value: number) => (
+    <span className="flex items-baseline gap-0.5">
+      <span className="text-neutral-500">{symbol}</span>
+      <span className="font-semibold text-neutral-200">{formatRate(value)}</span>
+    </span>
+  );
+
   return (
     // Липкий на телефоні (на десктопі фіксується NavBar). sticky = контейнер
     // для absolute-меню бургера.
     <header className="sticky top-0 z-40 bg-neutral-900 text-white sm:static sm:z-auto">
-      {/* Логотип + сервіси (на всю ширину) */}
-      <div className="flex items-center justify-between gap-3 px-4 py-3 sm:gap-4 sm:px-6">
+      {/* Три зони: [лого] … [ambient-інфо: дата·курси] │ [контроли: громада, пошук] */}
+      <div className="flex items-center justify-between gap-3 px-4 py-3 sm:gap-5 sm:px-6">
+        {/* Ліворуч — ідентичність. На телефоні поряд ще дата+курси (ambient). */}
         <div className="flex min-w-0 items-center gap-3">
           <Logo size="md" />
-          {/* Дата — поруч із логотипом. На телефоні замінює прихований напис лого. */}
-          <span className="whitespace-nowrap text-xs text-neutral-400 sm:border-l sm:border-white/15 sm:pl-3">
-            <span className="uppercase">{weekday}</span>, {dayMonth}
-          </span>
-
-          {/* Курси на телефоні — компактно біля дати, лише символ валюти (без прапорів) */}
-          <span className="flex items-center gap-2 whitespace-nowrap text-xs tabular-nums text-neutral-400 sm:hidden">
+          <div className="flex items-center gap-2 whitespace-nowrap text-xs tabular-nums text-neutral-400 sm:hidden">
+            <span className="border-l border-white/15 pl-3">{dateLabel}</span>
             <span aria-hidden className="h-3 w-px bg-white/15" />
-            <span className="flex items-baseline gap-0.5">
-              <span className="text-neutral-500">$</span>
-              <span className="font-semibold text-neutral-200">
-                {formatRate(rates.usd)}
-              </span>
-            </span>
-            <span className="flex items-baseline gap-0.5">
-              <span className="text-neutral-500">€</span>
-              <span className="font-semibold text-neutral-200">
-                {formatRate(rates.eur)}
-              </span>
-            </span>
-          </span>
+            {rate("$", rates.usd)}
+            {rate("€", rates.eur)}
+          </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          {/* Перемикач громади — на телефоні захований у бургер-меню (NavLinks) */}
+        {/* Праворуч — згруповано: ambient-інфо, роздільник, контроли. */}
+        <div className="flex items-center gap-3 sm:gap-4">
+          {/* Ambient-інфо (десктоп): дата · курси — приглушено, найнижчий пріоритет. */}
+          <div className="hidden items-center gap-3 whitespace-nowrap text-xs tabular-nums text-neutral-400 lg:flex">
+            <span>{dateLabel}</span>
+            <span aria-hidden className="h-3.5 w-px bg-white/15" />
+            <span className="flex items-baseline gap-2.5">
+              {rate("$", rates.usd)}
+              {rate("€", rates.eur)}
+            </span>
+          </div>
+
+          {/* Роздільник між інформацією та контролами. */}
+          <span aria-hidden className="hidden h-5 w-px bg-white/15 lg:block" />
+
+          {/* Контроли (інтерактив) — перемикач громади + пошук, згруповані. */}
           <div className="hidden sm:block">
             <CommunitySwitcher
               communities={communities}
               activeSlug={activeCommunity?.slug ?? null}
             />
           </div>
-
-          {/* Курси валют НБУ — компактний тікер без «коробки» */}
-          <div className="hidden items-center gap-3 text-xs tabular-nums sm:flex">
-            <span className="flex items-baseline gap-1.5">
-              <span aria-hidden>🇺🇸</span>
-              <span className="text-[11px] font-medium uppercase tracking-wide text-neutral-400">
-                USD
-              </span>
-              <span className="font-semibold text-white">
-                {formatRate(rates.usd)}
-              </span>
-              <span className="text-neutral-500">₴</span>
-            </span>
-            <span aria-hidden className="h-3.5 w-px bg-white/15" />
-            <span className="flex items-baseline gap-1.5">
-              <span aria-hidden>🇪🇺</span>
-              <span className="text-[11px] font-medium uppercase tracking-wide text-neutral-400">
-                EUR
-              </span>
-              <span className="font-semibold text-white">
-                {formatRate(rates.eur)}
-              </span>
-              <span className="text-neutral-500">₴</span>
-            </span>
-          </div>
-
-          {/* Пошук — інлайн у шапці (розгортається по кліку, без окремої сторінки) */}
           <HeaderSearch />
 
           {/* Бургер — лише на телефоні (розділи + громада) */}
