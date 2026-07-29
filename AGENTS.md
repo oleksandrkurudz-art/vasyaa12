@@ -4,10 +4,14 @@
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
 <!-- END:nextjs-agent-rules -->
 
-# Проєкт: Громада.Новини
+# Проєкт: НРГ
 
-Локальний новинний портал. Слоган: «Новини, люди, бізнес — в одному місці».
-ТЗ — у `ТЗ.txt`.
+Регіональний новинний портал. Повна назва — «НРГ — Незалежний регіональний голос».
+Бренд: словесний знак «НРГ» + червоний бейдж «LIVE» (`src/components/Logo.tsx`);
+шапка — градієнт із фірмового темно-синього (`brand-950`, зона лого) у чорний.
+Назва й слоган — константи `SITE_NAME`/`SITE_SLOGAN` у `src/lib/categories.ts`
+(єдине джерело: метадані, OG, підвал, адмінка, промпт копірайтера).
+ТЗ — у `ТЗ.txt` (писане ще під стару назву «Громада.Новини», ребрендинг — 2026-07).
 
 ## Стек
 Next.js 16 (App Router) · React 19 · TypeScript · Tailwind 4 · Prisma 7 (Postgres — Supabase локально й на проді).

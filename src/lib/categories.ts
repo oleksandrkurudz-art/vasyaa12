@@ -96,8 +96,8 @@ export function categoryName(slug: string): string {
   return CATEGORIES.find((c) => c.slug === slug)?.name ?? slug;
 }
 
-export const SITE_NAME = "Громада.Новини";
-export const SITE_SLOGAN = "Новини, люди, бізнес — в одному місці";
+export const SITE_NAME = "НРГ";
+export const SITE_SLOGAN = "Незалежний регіональний голос";
 
 // Базова адреса сайту — для абсолютних URL у метатегах (canonical, Open Graph).
 // На Vercel можна задати NEXT_PUBLIC_SITE_URL; інакше — прод-домен за замовчуванням.

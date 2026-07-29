@@ -1,39 +1,49 @@
 import Link from "next/link";
-import { SITE_NAME } from "@/lib/categories";
+import { SITE_NAME, SITE_SLOGAN } from "@/lib/categories";
 
 /**
- * Фірмовий знак: градієнтний бейдж із serif-«Г», внутрішнім обідком
- * і акцент-смужкою знизу — щоб виглядав як логотип, а не заглушка.
+ * Фірмовий знак НРГ: словесний логотип «НРГ» + червоний бейдж «LIVE»
+ * (знак живого ефіру з логотипа). Працює на темному тлі (шапка) і на
+ * світлому (липка смуга меню, підвал) — через проп `tone`.
+ *
+ * Круглий «LIVE» з оригіналу адаптовано в пігулку: вертикальний текст у
+ * колі стає нечитабельним на висоті ~28px, тож для вебу — горизонтальний
+ * бейдж із пульсуючою крапкою.
  */
 export default function Logo({
   size = "md",
+  tone = "onDark",
 }: {
   size?: "sm" | "md";
+  tone?: "onDark" | "onLight";
 }) {
   const md = size === "md";
-  const box = md ? "h-10 w-10" : "h-8 w-8";
-  const letter = md ? "text-2xl" : "text-lg";
-  const accent = md ? "inset-x-1.5 bottom-[3px] h-[3px]" : "inset-x-1 bottom-[2px] h-[2px]";
-  const name = md
-    ? "text-xl text-white sm:text-3xl"
-    : "text-lg text-neutral-900";
+
+  const word = md ? "text-2xl sm:text-3xl" : "text-xl";
+  const wordTone = tone === "onDark" ? "text-white" : "text-brand-950";
+  const badge = md
+    ? "gap-1 px-1.5 py-0.5 text-[10px]"
+    : "gap-[3px] px-1 py-px text-[9px]";
+  const dot = md ? "h-1.5 w-1.5" : "h-1 w-1";
 
   return (
-    <Link href="/" className="flex min-w-0 items-center gap-2.5">
+    <Link
+      href="/"
+      aria-label={`${SITE_NAME} — ${SITE_SLOGAN}`}
+      className="flex min-w-0 shrink-0 items-center gap-1.5"
+    >
       <span
-        className={`relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 shadow-sm ring-1 ring-inset ring-white/20 ${box}`}
-      >
-        <span
-          className={`font-display ${letter} font-black leading-none text-white`}
-        >
-          Г
-        </span>
-        <span className={`absolute rounded-full bg-white/55 ${accent}`} />
-      </span>
-      <span
-        className={`hidden truncate font-display font-black tracking-tight sm:block ${name}`}
+        className={`font-display font-black leading-none tracking-tight ${word} ${wordTone}`}
       >
         {SITE_NAME}
+      </span>
+      {/* «LIVE» — червоний акцент бренду (єдине червоне в шапці). */}
+      <span
+        aria-hidden
+        className={`inline-flex items-center rounded-sm bg-urgent-600 font-black uppercase leading-none tracking-wider text-white ${badge}`}
+      >
+        <span className={`rounded-full bg-white/90 ${dot}`} />
+        Live
       </span>
     </Link>
   );

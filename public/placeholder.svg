@@ -4,5 +4,5 @@
     <circle cx="400" cy="190" r="60"/>
     <path d="M250 330c0-55 67-90 150-90s150 35 150 90v40H250z"/>
   </g>
-  <text x="400" y="420" font-family="Arial, sans-serif" font-size="22" fill="#9a9a9a" text-anchor="middle">Громада.Новини</text>
+  <text x="400" y="420" font-family="Arial, sans-serif" font-size="22" fill="#9a9a9a" text-anchor="middle">НРГ</text>
 </svg>

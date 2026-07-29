@@ -35,9 +35,10 @@ export default async function Header() {
   );
 
   return (
-    // Липкий на телефоні (на десктопі фіксується NavBar). sticky = контейнер
-    // для absolute-меню бургера.
-    <header className="sticky top-0 z-40 bg-neutral-900 text-white sm:static sm:z-auto">
+    // Фірмовий градієнт НРГ: зона лого — глибокий синій зі знака, далі плавно
+    // йде в чорний. Липкий на телефоні (на десктопі фіксується NavBar);
+    // sticky = контейнер для absolute-меню бургера.
+    <header className="sticky top-0 z-40 bg-gradient-to-r from-brand-950 via-neutral-950 to-neutral-950 text-white sm:static sm:z-auto">
       {/* Три зони: [лого] … [ambient-інфо: дата·курси] │ [контроли: громада, пошук] */}
       <div className="flex items-center justify-between gap-3 px-4 py-3 sm:gap-5 sm:px-6">
         {/* Ліворуч — ідентичність. На телефоні поряд ще дата+курси (ambient). */}

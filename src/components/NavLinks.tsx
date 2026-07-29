@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import Logo from "@/components/Logo";
 import {
   PRIMARY_CATEGORIES,
   MORE_CATEGORIES,
   categoryStyle,
-  SITE_NAME,
 } from "@/lib/categories";
 
 // Горизонтальне меню розділів (десктоп/планшет). Дворівнева навігація:
@@ -158,23 +158,16 @@ export default function NavLinks() {
       <div
         ref={logoRef}
         className={`overflow-hidden transition-all duration-300 ease-out ${
-          scrolled ? "mr-2 w-9 opacity-100" : "w-0 opacity-0"
+          scrolled ? "mr-2 max-w-[9rem] opacity-100" : "max-w-0 opacity-0"
         }`}
       >
-        <Link
-          href="/"
-          aria-label={SITE_NAME}
-          className={`flex h-9 w-9 items-center justify-center transition-transform duration-300 ease-out ${
+        <div
+          className={`flex h-9 items-center transition-transform duration-300 ease-out ${
             scrolled ? "translate-y-0" : "-translate-y-full"
           }`}
         >
-          <span className="relative inline-flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 shadow-sm ring-1 ring-inset ring-white/20">
-            <span className="font-display text-lg font-black leading-none text-white">
-              Г
-            </span>
-            <span className="absolute inset-x-1 bottom-[2px] h-[2px] rounded-full bg-white/55" />
-          </span>
-        </Link>
+          <Logo size="sm" tone="onLight" />
+        </div>
       </div>
 
       {/* «Головна» — фіксований перший пункт (не ховається під «Ще»). */}

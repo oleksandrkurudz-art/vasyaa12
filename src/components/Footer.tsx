@@ -8,7 +8,7 @@ export default function Footer() {
       <div className="mx-auto max-w-6xl px-4 py-12">
         <div className="flex flex-col gap-8 sm:flex-row sm:justify-between">
           <div className="max-w-xs">
-            <Logo size="sm" />
+            <Logo size="sm" tone="onLight" />
             <p className="mt-3 text-sm text-neutral-500">{SITE_SLOGAN}</p>
           </div>
           <nav>
