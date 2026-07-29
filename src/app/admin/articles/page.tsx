@@ -3,6 +3,7 @@ import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { formatDate } from "@/lib/format";
 import { deleteArticle } from "@/app/admin/actions";
+import { categoryName } from "@/lib/categories";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Новини · Адмінка" };
@@ -44,7 +45,7 @@ export default async function AdminArticles() {
                 <td className="px-4 py-2 font-medium text-neutral-900">
                   {a.title}
                 </td>
-                <td className="px-4 py-2 text-neutral-600">{a.category.name}</td>
+                <td className="px-4 py-2 text-neutral-600">{categoryName(a.category.slug)}</td>
                 <td className="px-4 py-2">
                   {a.status === "published" ? (
                     <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs text-green-700">

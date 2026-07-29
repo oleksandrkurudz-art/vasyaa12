@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CATEGORIES } from "@/lib/categories";
+import { PRIMARY_CATEGORIES, MORE_CATEGORIES } from "@/lib/categories";
 import CommunityChips from "@/components/CommunityChips";
 import type { Community } from "@/generated/prisma/client";
 
@@ -84,24 +84,59 @@ export default function MobileMenu({
           </div>
 
           <ul className="flex flex-col py-1.5">
-            {CATEGORIES.map((c) => {
-              const active = isActive(c.slug);
-              return (
-                <li key={c.slug}>
-                  <Link
-                    href={`/${c.slug}`}
-                    onClick={() => setOpen(false)}
-                    className={`flex items-center border-l-[3px] px-4 py-3 text-[0.95rem] font-semibold transition-colors ${
-                      active
-                        ? "border-brand-500 bg-white/10 text-white"
-                        : "border-transparent text-white hover:bg-white/5"
-                    }`}
-                  >
-                    {c.name}
-                  </Link>
-                </li>
-              );
-            })}
+            {/* Головна */}
+            <li>
+              <Link
+                href="/"
+                onClick={() => setOpen(false)}
+                className={`flex items-center border-l-[3px] px-4 py-3 text-[0.95rem] font-semibold transition-colors ${
+                  pathname === "/"
+                    ? "border-brand-500 bg-white/10 text-white"
+                    : "border-transparent text-white hover:bg-white/5"
+                }`}
+              >
+                Головна
+              </Link>
+            </li>
+            {/* Основні розділи (маршрут читача) */}
+            {PRIMARY_CATEGORIES.map((c) => (
+              <li key={c.slug}>
+                <Link
+                  href={`/${c.slug}`}
+                  onClick={() => setOpen(false)}
+                  className={`flex items-center border-l-[3px] px-4 py-3 text-[0.95rem] font-semibold transition-colors ${
+                    isActive(c.slug)
+                      ? "border-brand-500 bg-white/10 text-white"
+                      : "border-transparent text-white hover:bg-white/5"
+                  }`}
+                >
+                  {c.name}
+                </Link>
+              </li>
+            ))}
+            {/* Другорядні розділи — під тихим підзаголовком «Ще» */}
+            {MORE_CATEGORIES.length > 0 && (
+              <li className="mt-1 border-t border-white/10 px-4 pb-1 pt-3">
+                <span className="text-xs font-semibold uppercase tracking-wide text-neutral-400">
+                  Ще
+                </span>
+              </li>
+            )}
+            {MORE_CATEGORIES.map((c) => (
+              <li key={c.slug}>
+                <Link
+                  href={`/${c.slug}`}
+                  onClick={() => setOpen(false)}
+                  className={`flex items-center border-l-[3px] px-4 py-3 text-[0.95rem] font-semibold transition-colors ${
+                    isActive(c.slug)
+                      ? "border-brand-500 bg-white/10 text-white"
+                      : "border-transparent text-white hover:bg-white/5"
+                  }`}
+                >
+                  {c.name}
+                </Link>
+              </li>
+            ))}
             {/* Каталог бізнесу — окремо, відділений лінією (грошовий продукт). */}
             <li className="mt-1.5 border-t border-white/10 pt-1.5">
               <Link

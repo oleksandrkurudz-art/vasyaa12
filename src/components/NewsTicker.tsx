@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { categoryStyle } from "@/lib/categories";
+import { categoryStyle, categoryName } from "@/lib/categories";
 import { formatDate } from "@/lib/format";
 import type { Article, Category } from "@/generated/prisma/client";
 
@@ -13,7 +13,7 @@ export default function NewsTicker({ articles }: { articles: Item[] }) {
       {articles.map((a) => (
         <li
           key={a.id}
-          className="group border-t border-brand-100 first:border-t-0"
+          className="group border-t border-neutral-200 first:border-t-0"
         >
           <Link
             href={`/${a.category.slug}/${a.slug}`}
@@ -23,7 +23,7 @@ export default function NewsTicker({ articles }: { articles: Item[] }) {
               <span
                 className={`font-semibold uppercase tracking-wide ${categoryStyle(a.category.slug).text}`}
               >
-                {a.category.name}
+                {categoryName(a.category.slug)}
               </span>
               <span aria-hidden>·</span>
               <time>{formatDate(a.publishedAt)}</time>

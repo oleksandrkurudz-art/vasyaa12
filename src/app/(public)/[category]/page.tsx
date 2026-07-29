@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import ArticleCard from "@/components/ArticleCard";
 import Sidebar from "@/components/Sidebar";
 import { getArticlesByCategory } from "@/lib/articles";
-import { categoryStyle } from "@/lib/categories";
+import { categoryStyle, categoryName } from "@/lib/categories";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +20,7 @@ export async function generateMetadata({
   const { category } = await params;
   const { page } = await searchParams;
   const data = await getArticlesByCategory(category, Number(page) || 1);
-  return { title: data?.category.name ?? "Розділ" };
+  return { title: data ? categoryName(data.category.slug) : "Розділ" };
 }
 
 export default async function CategoryPage({ params, searchParams }: Params) {
@@ -43,7 +43,7 @@ export default async function CategoryPage({ params, searchParams }: Params) {
               Розділ
             </p>
             <h1 className="mt-1 font-display text-3xl font-black tracking-tight text-neutral-900">
-              {data.category.name}
+              {categoryName(data.category.slug)}
             </h1>
           </header>
 

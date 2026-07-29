@@ -14,7 +14,7 @@ import {
 } from "@/lib/articles";
 import { getContextualAds } from "@/lib/ads";
 import { isBot } from "@/lib/bots";
-import { SITE_NAME, SITE_URL, categoryStyle } from "@/lib/categories";
+import { SITE_NAME, SITE_URL, categoryStyle, categoryName } from "@/lib/categories";
 import { formatDate, formatViews, hasEnoughViews } from "@/lib/format";
 import { parseTags } from "@/lib/tags";
 
@@ -47,7 +47,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
       url,
       images,
       publishedTime: article.publishedAt?.toISOString(),
-      section: article.category.name,
+      section: categoryName(article.category.slug),
     },
     twitter: {
       card: "summary_large_image",
@@ -99,7 +99,7 @@ export default async function ArticlePage({ params }: Params) {
     image: article.coverImage ? [article.coverImage] : undefined,
     datePublished: article.publishedAt?.toISOString(),
     dateModified: article.updatedAt.toISOString(),
-    articleSection: article.category.name,
+    articleSection: categoryName(article.category.slug),
     inLanguage: "uk-UA",
     url: canonical,
     mainEntityOfPage: { "@type": "WebPage", "@id": canonical },
@@ -125,7 +125,7 @@ export default async function ArticlePage({ params }: Params) {
               href={`/${article.category.slug}`}
               className={`text-sm font-semibold uppercase tracking-wider hover:underline ${categoryStyle(article.category.slug).text}`}
             >
-              {article.category.name}
+              {categoryName(article.category.slug)}
             </Link>
           </div>
           <h1 className="font-display mt-2 text-3xl font-black leading-tight tracking-tight text-neutral-900 sm:text-[2.7rem] sm:leading-[1.12]">
@@ -192,7 +192,7 @@ export default async function ArticlePage({ params }: Params) {
           {related.length > 0 && (
             <section className="mt-12">
               <div className="mb-5 flex items-center gap-3">
-                <span className="h-5 w-1 rounded bg-brand-600" />
+                <span className="h-5 w-1 rounded bg-neutral-300" />
                 <h2 className="font-display text-xl font-black tracking-tight text-neutral-900">
                   Читайте також
                 </h2>

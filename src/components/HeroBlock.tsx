@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Cover from "@/components/Cover";
-import { categoryStyle } from "@/lib/categories";
+import { categoryStyle, categoryName } from "@/lib/categories";
 import { formatDate, formatViews, hasEnoughViews } from "@/lib/format";
 import type { Article, Category } from "@/generated/prisma/client";
 
@@ -40,7 +40,7 @@ export default function HeroBlock({
             <span
               className={`rounded px-2.5 py-1 text-xs font-bold uppercase tracking-wide ${categoryStyle(featured.category.slug).solid}`}
             >
-              {featured.category.name}
+              {categoryName(featured.category.slug)}
             </span>
           </div>
 
@@ -86,7 +86,7 @@ export default function HeroBlock({
                   <span
                     className={`text-[11px] font-semibold uppercase tracking-wide ${categoryStyle(a.category.slug).onDark}`}
                   >
-                    {a.category.name}
+                    {categoryName(a.category.slug)}
                   </span>
                   <p className="mt-1 line-clamp-3 text-sm font-semibold leading-snug text-white transition-colors group-hover:text-brand-200">
                     {a.title}

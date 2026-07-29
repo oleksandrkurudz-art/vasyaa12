@@ -1,21 +1,30 @@
 // Канонічний список розділів сайту (із ТЗ).
 // Використовується для навігації та для наповнення БД (seed).
+// `name` тут — ЄДИНЕ джерело відображуваної назви (картки, герой, хлібні крихти
+// беруть її через `categoryName(slug)`, а не з БД) — тож перейменування суто в коді.
 export type CategoryDef = {
   slug: string;
   name: string;
+  // Рівень навігації: "primary" — у головній смузі меню; "more" — завжди під «Ще ▾».
+  // Дворівнева навігація = маршрут читача, а не повний перелік рубрик.
+  group: "primary" | "more";
 };
 
 export const CATEGORIES: CategoryDef[] = [
-  { slug: "novyny", name: "Новини громади" },
-  { slug: "polityka", name: "Політика та рішення ради" },
-  { slug: "biznes", name: "Бізнес громади" },
-  { slug: "afisha", name: "Афіша подій" },
-  { slug: "vakansii", name: "Вакансії" },
-  { slug: "ogoloshennya", name: "Оголошення" },
-  { slug: "foto", name: "Фотогалерея" },
-  { slug: "lyudy", name: "Люди громади" },
-  { slug: "nekrolohy", name: "Некрологи та співчуття" },
+  { slug: "novyny", name: "Новини", group: "primary" },
+  { slug: "polityka", name: "Влада", group: "primary" },
+  { slug: "biznes", name: "Бізнес", group: "primary" },
+  { slug: "afisha", name: "Події", group: "primary" },
+  { slug: "lyudy", name: "Люди", group: "primary" },
+  { slug: "ogoloshennya", name: "Оголошення", group: "primary" },
+  { slug: "foto", name: "Фотогалерея", group: "more" },
+  { slug: "vakansii", name: "Вакансії", group: "more" },
+  { slug: "nekrolohy", name: "Пам'ять", group: "more" },
 ];
+
+// Двa рівні навігації, похідні від `group`.
+export const PRIMARY_CATEGORIES = CATEGORIES.filter((c) => c.group === "primary");
+export const MORE_CATEGORIES = CATEGORIES.filter((c) => c.group === "more");
 
 // Колірне кодування розділів. Класи — літеральні рядки (інакше сканер Tailwind
 // їх не згенерує). Поля під різні контексти:

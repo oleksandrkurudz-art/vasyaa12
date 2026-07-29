@@ -3,12 +3,18 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { CATEGORIES, categoryStyle, SITE_NAME } from "@/lib/categories";
+import {
+  PRIMARY_CATEGORIES,
+  MORE_CATEGORIES,
+  categoryStyle,
+  SITE_NAME,
+} from "@/lib/categories";
 
-// Горизонтальне меню розділів (десктоп/планшет). Priority+ навігація: скільки
-// розділів влазить у смугу — показуємо, решту ховаємо під кнопку «Ще ▾».
-// Каталог-пігулка (грошовий продукт) завжди видима. Кількість перераховується
-// на зміну ширини (ResizeObserver) — тож і майбутні розділи обробляться самі.
+// Горизонтальне меню розділів (десктоп/планшет). Дворівнева навігація:
+//  • primary-розділи живуть у смузі (маршрут читача);
+//  • more-розділи (`MORE_CATEGORIES`) завжди під кнопкою «Ще ▾».
+// Понад те — priority+: якщо primary-розділи не влазять за шириною, «хвіст»
+// теж іде під «Ще». Перерахунок на зміну ширини (ResizeObserver).
 const GAP = 4; // gap-1 (має збігатися з класом gap нижче)
 const MORE_W = 64; // приблизна ширина кнопки «Ще ▾» + gap
 
@@ -19,11 +25,12 @@ export default function NavLinks() {
   const rowRef = useRef<HTMLDivElement>(null);
   const measureRef = useRef<HTMLUListElement>(null);
   const catalogRef = useRef<HTMLDivElement>(null);
+  const homeRef = useRef<HTMLDivElement>(null);
   const logoRef = useRef<HTMLDivElement>(null);
   const moreRef = useRef<HTMLDivElement>(null);
   const widthsRef = useRef<number[]>([]);
 
-  const [visibleCount, setVisibleCount] = useState(CATEGORIES.length);
+  const [visibleCount, setVisibleCount] = useState(PRIMARY_CATEGORIES.length);
   const [moreOpen, setMoreOpen] = useState(false);
   // Коли темна шапка з лого прокручена вгору — показуємо компактне лого прямо
   // в липкій смузі розділів (лого «спускається» до категорій).
@@ -39,16 +46,22 @@ export default function NavLinks() {
     const catalogW = catalogRef.current?.offsetWidth ?? 0;
     // Лого з'являється при скролі й забирає місце зліва — враховуємо його ширину.
     const logoW = logoRef.current?.offsetWidth ?? 0;
+    // «Головна» — фіксований пункт зліва, теж займає місце.
+    const homeW = homeRef.current?.offsetWidth ?? 0;
+    const base = total - catalogW - logoW - homeW - GAP;
 
-    // Чи влазять усі розділи без кнопки «Ще»?
-    const sumAll = widths.reduce((a, w, i) => a + w + (i > 0 ? GAP : 0), 0);
-    if (sumAll + GAP + catalogW + logoW <= total) {
-      setVisibleCount(widths.length);
-      return;
+    // Якщо more-розділів немає й усі primary влазять — «Ще» не потрібне.
+    if (MORE_CATEGORIES.length === 0) {
+      const sumAll = widths.reduce((a, w, i) => a + w + (i > 0 ? GAP : 0), 0);
+      if (sumAll <= base) {
+        setVisibleCount(widths.length);
+        return;
+      }
     }
 
-    // Інакше резервуємо місце під «Ще» і рахуємо, скільки влазить.
-    const avail = total - catalogW - logoW - GAP - MORE_W;
+    // Інакше «Ще» присутнє (more-розділи або overflow) — резервуємо під нього
+    // місце й рахуємо, скільки primary влазить поряд.
+    const avail = base - MORE_W;
     let used = 0;
     let count = 0;
     for (let i = 0; i < widths.length; i++) {
@@ -123,8 +136,12 @@ export default function NavLinks() {
     };
   }, [moreOpen]);
 
-  const visible = CATEGORIES.slice(0, visibleCount);
-  const overflow = CATEGORIES.slice(visibleCount);
+  // Видимі — початок primary; під «Ще» — хвіст primary, що не вліз, + усі more-розділи.
+  const visible = PRIMARY_CATEGORIES.slice(0, visibleCount);
+  const overflow = [
+    ...PRIMARY_CATEGORIES.slice(visibleCount),
+    ...MORE_CATEGORIES,
+  ];
   const activeInOverflow = overflow.some((c) => isActive(c.slug));
 
   const linkClass = (slug: string) =>
@@ -157,6 +174,20 @@ export default function NavLinks() {
             </span>
             <span className="absolute inset-x-1 bottom-[2px] h-[2px] rounded-full bg-white/55" />
           </span>
+        </Link>
+      </div>
+
+      {/* «Головна» — фіксований перший пункт (не ховається під «Ще»). */}
+      <div ref={homeRef} className="shrink-0">
+        <Link
+          href="/"
+          className={`block whitespace-nowrap border-b-[3px] px-3 py-3.5 text-sm font-semibold transition-all duration-200 ${
+            pathname === "/"
+              ? "border-brand-600 text-brand-700"
+              : "border-transparent text-neutral-600 hover:border-brand-300 hover:text-brand-700"
+          }`}
+        >
+          Головна
         </Link>
       </div>
 
@@ -221,27 +252,44 @@ export default function NavLinks() {
         </div>
       )}
 
-      {/* Каталог бізнесу — грошовий продукт, завжди видима акцентна пігулка. */}
+      {/* Каталог бізнесу — окремий сервіс, не рубрика: завжди видима пігулка, але
+          менш домінантна — контурна з іконкою вітрини. Активна = залита. */}
       <div ref={catalogRef} className="ml-auto shrink-0 pl-2">
         <Link
           href="/kataloh"
-          className={`block whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-semibold text-white transition-colors ${
+          className={`flex items-center gap-1.5 whitespace-nowrap rounded-full border px-3.5 py-1.5 text-sm font-semibold transition-colors ${
             pathname.startsWith("/kataloh")
-              ? "bg-brand-800"
-              : "bg-brand-600 hover:bg-brand-700"
+              ? "border-brand-600 bg-brand-600 text-white"
+              : "border-brand-600 text-brand-700 hover:bg-brand-50"
           }`}
         >
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden
+          >
+            <path d="M3 9l1.5-5h15L21 9" />
+            <path d="M4 9v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9" />
+            <path d="M4 9a2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0" />
+            <path d="M9 20v-5h6v5" />
+          </svg>
           Каталог бізнесу
         </Link>
       </div>
 
-      {/* Прихований повний список — лише для заміру ширин пунктів. */}
+      {/* Прихований список primary — лише для заміру ширин пунктів. */}
       <ul
         ref={measureRef}
         aria-hidden
         className="pointer-events-none invisible absolute left-0 top-0 flex gap-1"
       >
-        {CATEGORIES.map((c) => (
+        {PRIMARY_CATEGORIES.map((c) => (
           <li key={c.slug}>
             <span className={linkClass(c.slug)}>{c.name}</span>
           </li>

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Cover from "@/components/Cover";
-import { categoryStyle } from "@/lib/categories";
+import { categoryStyle, categoryName } from "@/lib/categories";
 import { formatDate, formatViews, hasEnoughViews } from "@/lib/format";
 import type { Article, Category } from "@/generated/prisma/client";
 
@@ -89,7 +89,7 @@ function CategoryBadge({ category }: { category: Category }) {
       href={`/${category.slug}`}
       className={`w-fit rounded-full px-2.5 py-1 text-xs font-semibold uppercase tracking-wide transition-colors ${categoryStyle(category.slug).badge}`}
     >
-      {category.name}
+      {categoryName(category.slug)}
     </Link>
   );
 }
