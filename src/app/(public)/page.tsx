@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 function SectionHeading({ title }: { title: string }) {
   return (
     <div className="mb-5 flex items-center gap-3">
-      <span className="h-5 w-1 rounded bg-brand-600" />
+      <span className="h-5 w-1 rounded bg-neutral-300" />
       <h2 className="font-display text-xl font-black tracking-tight text-neutral-900">
         {title}
       </h2>

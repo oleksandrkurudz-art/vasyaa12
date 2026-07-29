@@ -6,8 +6,9 @@ import NavLinks from "@/components/NavLinks";
 export default function NavBar() {
   return (
     <div className="sticky top-0 z-30 hidden sm:block">
-      {/* Синя акцент-лінія — тонкий «капелюх» липкої смуги */}
-      <div className="h-0.5 bg-brand-600" />
+      {/* Тонкий нейтральний «капелюх» — м'який край між темним хедером і смугою.
+          Синій лишаємо для дій/категорій, а не для декору. */}
+      <div className="h-0.5 bg-neutral-300" />
 
       {/* Світло-сіра смуга меню: м'якший перехід від темного хедера, ніж різко-біла.
           Легка тінь відділяє її від контенту нижче. */}

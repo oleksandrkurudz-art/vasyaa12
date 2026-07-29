@@ -43,8 +43,8 @@ export default async function CatalogPage({ searchParams }: Params) {
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-6">
-      <header className="border-l-4 border-brand-600 pl-4">
-        <p className="text-xs font-semibold uppercase tracking-wider text-brand-700">
+      <header className="border-l-4 border-neutral-300 pl-4">
+        <p className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
           Довідник
         </p>
         <h1 className="mt-1 font-display text-3xl font-black tracking-tight text-neutral-900">

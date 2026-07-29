@@ -20,7 +20,7 @@ export default async function Sidebar() {
         <ol className="mt-4 space-y-4">
           {popular.map((a, i) => (
             <li key={a.id} className="flex gap-3">
-              <span className="font-display text-xl font-black leading-none text-brand-200">
+              <span className="font-display text-xl font-black leading-none text-neutral-300">
                 {i + 1}
               </span>
               <div className="min-w-0">
