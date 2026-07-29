@@ -41,9 +41,11 @@ export default async function Header() {
     <header className="sticky top-0 z-40 bg-neutral-950 text-white sm:static sm:z-auto">
       {/* Три зони: [лого] … [ambient-інфо: дата·курси] │ [контроли: громада, пошук] */}
       <div className="flex items-center justify-between gap-3 px-4 py-3 sm:gap-5 sm:px-6">
-        {/* Ліворуч — ідентичність. На телефоні поряд ще дата+курси (ambient). */}
-        <div className="flex min-w-0 items-center gap-3">
-          <Logo size="md" />
+        {/* Ліворуч — ідентичність. На телефоні поряд ще дата+курси (ambient).
+            `self-stretch -my-3` тягне зону лого на всю висоту хедера (з'їдає
+            вертикальний padding), щоб синя плашка знака сягала верху й низу. */}
+        <div className="-my-3 flex min-w-0 items-center gap-3 self-stretch">
+          <Logo size="md" variant="band" />
           <div className="flex items-center gap-2 whitespace-nowrap text-xs tabular-nums text-neutral-400 sm:hidden">
             <span className="border-l border-white/15 pl-3">{dateLabel}</span>
             <span aria-hidden className="h-3 w-px bg-white/15" />
