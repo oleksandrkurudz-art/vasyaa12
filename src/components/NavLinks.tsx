@@ -166,7 +166,7 @@ export default function NavLinks() {
             scrolled ? "translate-y-0" : "-translate-y-full"
           }`}
         >
-          <Logo size="sm" tone="onLight" />
+          <Logo size="sm" />
         </div>
       </div>
 
