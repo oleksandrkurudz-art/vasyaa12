@@ -20,9 +20,9 @@ export default function Logo({
   const box = md
     ? "h-8 w-8 text-lg sm:h-10 sm:w-10 sm:text-[1.35rem]"
     : "h-7 w-7 text-sm";
-  // На головному хедері (md) — більший відступ між плашками; у компактному барі/
+  // На головному хедері (md) — ширший відступ між плашками; у компактному барі/
   // підвалі (sm) лишаємо щільніше.
-  const gap = md ? "gap-2" : "gap-1";
+  const gap = md ? "gap-3" : "gap-1.5";
   const colors =
     tone === "onDark" ? "bg-white text-neutral-950" : "bg-neutral-950 text-white";
 
@@ -36,7 +36,7 @@ export default function Logo({
         <span
           key={i}
           aria-hidden
-          className={`flex items-center justify-center rounded-[2px] font-display font-black leading-none ${box} ${colors}`}
+          className={`flex items-center justify-center font-display font-black leading-none ${box} ${colors}`}
         >
           {letter}
         </span>

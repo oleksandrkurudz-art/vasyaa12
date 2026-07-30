@@ -43,7 +43,7 @@ export default function HeaderSearch({
         type="button"
         onClick={() => setOpen(true)}
         aria-label="Пошук новин"
-        className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+        className={`flex items-center gap-1.5 border px-3 py-1.5 text-xs font-medium transition-colors ${
           light
             ? "border-neutral-300 text-neutral-600 hover:border-neutral-400 hover:bg-neutral-100 hover:text-neutral-900"
             : "border-white/20 text-neutral-300 hover:border-white/40 hover:bg-white/5 hover:text-white"
@@ -66,7 +66,7 @@ export default function HeaderSearch({
         onBlur={() => q.trim() === "" && setOpen(false)}
         placeholder="Пошук новин…"
         aria-label="Пошук новин"
-        className={`w-44 rounded-full py-1.5 pl-9 pr-3 text-xs outline-none transition-colors placeholder:text-neutral-400 sm:w-60 ${
+        className={`w-44 py-1.5 pl-9 pr-3 text-xs outline-none transition-colors placeholder:text-neutral-400 sm:w-60 ${
           light
             ? "border border-neutral-300 bg-white text-neutral-900 focus:border-neutral-500"
             : "border border-white/25 bg-white/10 text-white focus:border-white/50"

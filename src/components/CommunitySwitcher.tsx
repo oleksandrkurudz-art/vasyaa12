@@ -70,7 +70,7 @@ export default function CommunitySwitcher({
         disabled={pending}
         onClick={() => setOpen((v) => !v)}
         title="Оберіть громаду"
-        className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors disabled:opacity-60 ${
+        className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold transition-colors disabled:opacity-60 ${
           light
             ? "bg-neutral-200 text-neutral-800 hover:bg-neutral-300"
             : "border border-white/15 text-white hover:border-white/40 hover:bg-white/5"
@@ -109,7 +109,7 @@ export default function CommunitySwitcher({
         <ul
           role="listbox"
           aria-label="Громада"
-          className={`absolute right-0 z-50 mt-2 max-h-[70vh] min-w-[15rem] overflow-auto rounded-xl p-1.5 text-sm shadow-2xl ring-1 backdrop-blur-md ${
+          className={`absolute right-0 z-50 mt-2 max-h-[70vh] min-w-[15rem] overflow-auto p-1.5 text-sm shadow-2xl ring-1 backdrop-blur-md ${
             light
               ? "bg-white/95 text-neutral-800 ring-black/10"
               : "bg-neutral-900/85 text-white ring-white/10"
@@ -122,7 +122,7 @@ export default function CommunitySwitcher({
                 <button
                   type="button"
                   onClick={() => choose(o.slug)}
-                  className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-left transition-colors ${
+                  className={`flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left transition-colors ${
                     light ? "hover:bg-neutral-100" : "hover:bg-white/10"
                   } ${isActive ? "font-semibold" : "font-medium"}`}
                 >
