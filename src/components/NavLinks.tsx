@@ -3,14 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import Logo from "@/components/Logo";
 import {
   PRIMARY_CATEGORIES,
   MORE_CATEGORIES,
   categoryStyle,
 } from "@/lib/categories";
 
-// Горизонтальне меню розділів (десктоп/планшет). Дворівнева навігація:
+// Горизонтальне меню розділів (десктоп/планшет) у білій смузі під чорним
+// масthead-ом НРГ. Відцентроване (стиль BBC). Дворівнева навігація:
 //  • primary-розділи живуть у смузі (маршрут читача);
 //  • more-розділи (`MORE_CATEGORIES`) завжди під кнопкою «Ще ▾».
 // Понад те — priority+: якщо primary-розділи не влазять за шириною, «хвіст»
@@ -26,15 +26,11 @@ export default function NavLinks() {
   const measureRef = useRef<HTMLUListElement>(null);
   const catalogRef = useRef<HTMLDivElement>(null);
   const homeRef = useRef<HTMLDivElement>(null);
-  const logoRef = useRef<HTMLDivElement>(null);
   const moreRef = useRef<HTMLDivElement>(null);
   const widthsRef = useRef<number[]>([]);
 
   const [visibleCount, setVisibleCount] = useState(PRIMARY_CATEGORIES.length);
   const [moreOpen, setMoreOpen] = useState(false);
-  // Коли темна шапка з лого прокручена вгору — показуємо компактне лого прямо
-  // в липкій смузі розділів (лого «спускається» до категорій).
-  const [scrolled, setScrolled] = useState(false);
 
   // Перерахунок кількості видимих розділів під поточну ширину смуги.
   function recalc() {
@@ -44,11 +40,9 @@ export default function NavLinks() {
 
     const total = row.clientWidth;
     const catalogW = catalogRef.current?.offsetWidth ?? 0;
-    // Лого з'являється при скролі й забирає місце зліва — враховуємо його ширину.
-    const logoW = logoRef.current?.offsetWidth ?? 0;
     // «Головна» — фіксований пункт зліва, теж займає місце.
     const homeW = homeRef.current?.offsetWidth ?? 0;
-    const base = total - catalogW - logoW - homeW - GAP;
+    const base = total - catalogW - homeW - GAP;
 
     // Якщо more-розділів немає й усі primary влазять — «Ще» не потрібне.
     if (MORE_CATEGORIES.length === 0) {
@@ -100,22 +94,6 @@ export default function NavLinks() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Слухаємо скрол: щойно сторінка проїхала повз шапку — вмикаємо компактне лого.
-  useEffect(() => {
-    const THRESHOLD = 48; // ~висота, після якої темна шапка вже поза екраном
-    const onScroll = () => setScrolled(window.scrollY > THRESHOLD);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  // Поява/зникнення лого міняє доступну ширину — перераховуємо overflow.
-  useEffect(() => {
-    const raf = requestAnimationFrame(recalc);
-    return () => cancelAnimationFrame(raf);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [scrolled]);
-
   // Закриття «Ще» по кліку поза меню / Escape / зміні сторінки.
   useEffect(() => setMoreOpen(false), [pathname]);
   useEffect(() => {
@@ -152,142 +130,118 @@ export default function NavLinks() {
     }`;
 
   return (
-    <div ref={rowRef} className="relative flex items-center gap-1">
-      {/* Компактне лого «спускається» в смугу розділів при скролі. Схлопнуте до
-          нульової ширини, поки шапка на екрані, — тоді категорії тримають лівий край. */}
-      <div
-        ref={logoRef}
-        className={`overflow-hidden transition-all duration-300 ease-out ${
-          scrolled ? "mr-2 max-w-[9rem] opacity-100" : "max-w-0 opacity-0"
-        }`}
-      >
+    // Біла смуга розділів під чорним масthead-ом НРГ. Липка (див. NavBar).
+    <div className="border-b border-neutral-200 bg-neutral-100 shadow-md">
+      <nav className="px-4 sm:px-6">
         <div
-          className={`flex h-9 items-center transition-transform duration-300 ease-out ${
-            scrolled ? "translate-y-0" : "-translate-y-full"
-          }`}
+          ref={rowRef}
+          className="relative flex items-center justify-center gap-1"
         >
-          <Logo size="sm" />
-        </div>
-      </div>
-
-      {/* «Головна» — фіксований перший пункт (не ховається під «Ще»). */}
-      <div ref={homeRef} className="shrink-0">
-        <Link
-          href="/"
-          className={`block whitespace-nowrap border-b-[3px] px-3 py-3.5 text-sm font-semibold transition-all duration-200 ${
-            pathname === "/"
-              ? "border-brand-600 text-brand-700"
-              : "border-transparent text-neutral-600 hover:border-brand-300 hover:text-brand-700"
-          }`}
-        >
-          Головна
-        </Link>
-      </div>
-
-      {/* Видимі розділи */}
-      <ul className="flex items-center gap-1">
-        {visible.map((c) => (
-          <li key={c.slug}>
-            <Link href={`/${c.slug}`} className={linkClass(c.slug)}>
-              {c.name}
-            </Link>
-          </li>
-        ))}
-      </ul>
-
-      {/* «Ще ▾» — розділи, що не влізли */}
-      {overflow.length > 0 && (
-        <div ref={moreRef} className="relative">
-          <button
-            type="button"
-            aria-haspopup="true"
-            aria-expanded={moreOpen}
-            onClick={() => setMoreOpen((v) => !v)}
-            className={`flex items-center gap-1 whitespace-nowrap border-b-[3px] px-3 py-3.5 text-sm font-semibold transition-colors ${
-              activeInOverflow
-                ? "border-brand-600 text-brand-700"
-                : "border-transparent text-neutral-600 hover:text-brand-700"
-            }`}
-          >
-            Ще
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              aria-hidden
-              className={`transition-transform ${moreOpen ? "rotate-180" : ""}`}
+          {/* «Головна» — фіксований перший пункт (не ховається під «Ще»). */}
+          <div ref={homeRef} className="shrink-0">
+            <Link
+              href="/"
+              className={`block whitespace-nowrap border-b-[3px] px-3 py-3.5 text-sm font-semibold transition-all duration-200 ${
+                pathname === "/"
+                  ? "border-brand-600 text-brand-700"
+                  : "border-transparent text-neutral-600 hover:border-brand-300 hover:text-brand-700"
+              }`}
             >
-              <path d="m6 9 6 6 6-6" />
-            </svg>
-          </button>
+              Головна
+            </Link>
+          </div>
 
-          {moreOpen && (
-            <ul className="absolute left-0 top-full z-50 mt-0 min-w-[13rem] overflow-hidden rounded-b-lg border border-neutral-200 bg-white py-1 shadow-xl">
-              {overflow.map((c) => (
-                <li key={c.slug}>
-                  <Link
-                    href={`/${c.slug}`}
-                    className={`block px-4 py-2.5 text-sm font-medium transition-colors ${
-                      isActive(c.slug)
-                        ? "bg-neutral-50 text-brand-700"
-                        : "text-neutral-700 hover:bg-neutral-50 hover:text-brand-700"
-                    }`}
-                  >
-                    {c.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+          {/* «Каталог бізнесу» — сервіс-каталог підприємств (не новинна рубрика),
+              але у смузі виглядає як звичайний пункт, одразу після «Головної»
+              (зайняв місце колишнього розділу «Бізнес»). Завжди видимий. */}
+          <div ref={catalogRef} className="shrink-0">
+            <Link
+              href="/kataloh"
+              className={`block whitespace-nowrap border-b-[3px] px-3 py-3.5 text-sm font-semibold transition-all duration-200 ${
+                pathname.startsWith("/kataloh")
+                  ? "border-brand-600 text-brand-700"
+                  : "border-transparent text-neutral-600 hover:border-brand-300 hover:text-brand-700"
+              }`}
+            >
+              Каталог бізнесу
+            </Link>
+          </div>
+
+          {/* Видимі розділи */}
+          <ul className="flex items-center gap-1">
+            {visible.map((c) => (
+              <li key={c.slug}>
+                <Link href={`/${c.slug}`} className={linkClass(c.slug)}>
+                  {c.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+
+          {/* «Ще ▾» — розділи, що не влізли */}
+          {overflow.length > 0 && (
+            <div ref={moreRef} className="relative">
+              <button
+                type="button"
+                aria-haspopup="true"
+                aria-expanded={moreOpen}
+                onClick={() => setMoreOpen((v) => !v)}
+                className={`flex items-center gap-1 whitespace-nowrap border-b-[3px] px-3 py-3.5 text-sm font-semibold transition-colors ${
+                  activeInOverflow
+                    ? "border-brand-600 text-brand-700"
+                    : "border-transparent text-neutral-600 hover:text-brand-700"
+                }`}
+              >
+                Ще
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  aria-hidden
+                  className={`transition-transform ${moreOpen ? "rotate-180" : ""}`}
+                >
+                  <path d="m6 9 6 6 6-6" />
+                </svg>
+              </button>
+
+              {moreOpen && (
+                <ul className="absolute right-0 top-full z-50 mt-0 min-w-[13rem] overflow-hidden rounded-b-lg border border-neutral-200 bg-white py-1 shadow-xl">
+                  {overflow.map((c) => (
+                    <li key={c.slug}>
+                      <Link
+                        href={`/${c.slug}`}
+                        className={`block px-4 py-2.5 text-sm font-medium transition-colors ${
+                          isActive(c.slug)
+                            ? "bg-neutral-50 text-brand-700"
+                            : "text-neutral-700 hover:bg-neutral-50 hover:text-brand-700"
+                        }`}
+                      >
+                        {c.name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           )}
-        </div>
-      )}
 
-      {/* Каталог бізнесу — окремий сервіс, не рубрика: завжди видима пігулка, але
-          менш домінантна — контурна з іконкою вітрини. Активна = залита. */}
-      <div ref={catalogRef} className="ml-auto shrink-0 pl-2">
-        <Link
-          href="/kataloh"
-          className={`flex items-center gap-1.5 whitespace-nowrap rounded-full border px-3.5 py-1.5 text-sm font-semibold transition-colors ${
-            pathname.startsWith("/kataloh")
-              ? "border-brand-600 bg-brand-600 text-white"
-              : "border-brand-600 text-brand-700 hover:bg-brand-50"
-          }`}
-        >
-          <svg
-            width="15"
-            height="15"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+          {/* Прихований список primary — лише для заміру ширин пунктів. */}
+          <ul
+            ref={measureRef}
             aria-hidden
+            className="pointer-events-none invisible absolute left-0 top-0 flex gap-1"
           >
-            <path d="M3 9l1.5-5h15L21 9" />
-            <path d="M4 9v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9" />
-            <path d="M4 9a2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0 2.5 2.5 0 0 0 5 0" />
-            <path d="M9 20v-5h6v5" />
-          </svg>
-          Каталог бізнесу
-        </Link>
-      </div>
-
-      {/* Прихований список primary — лише для заміру ширин пунктів. */}
-      <ul
-        ref={measureRef}
-        aria-hidden
-        className="pointer-events-none invisible absolute left-0 top-0 flex gap-1"
-      >
-        {PRIMARY_CATEGORIES.map((c) => (
-          <li key={c.slug}>
-            <span className={linkClass(c.slug)}>{c.name}</span>
-          </li>
-        ))}
-      </ul>
+            {PRIMARY_CATEGORIES.map((c) => (
+              <li key={c.slug}>
+                <span className={linkClass(c.slug)}>{c.name}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </nav>
     </div>
   );
 }

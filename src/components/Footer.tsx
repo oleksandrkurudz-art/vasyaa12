@@ -7,7 +7,7 @@ export default function Footer() {
     <footer className="mt-20 border-t border-neutral-200 bg-neutral-50">
       <div className="mx-auto max-w-6xl px-4 py-12">
         <div className="flex flex-col gap-8 sm:flex-row sm:justify-between">
-          <div className="max-w-xs">
+          <div className="max-w-xs text-neutral-900">
             <Logo size="sm" />
             <p className="mt-3 text-sm text-neutral-500">{SITE_SLOGAN}</p>
           </div>

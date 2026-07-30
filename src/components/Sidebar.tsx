@@ -2,12 +2,14 @@ import Link from "next/link";
 import { getPopularArticles } from "@/lib/articles";
 import { formatViews, hasEnoughViews } from "@/lib/format";
 import { getWeather } from "@/lib/weather";
+import { getRates, formatRateUk } from "@/lib/rates";
 
 export default async function Sidebar() {
-  // Обидва джерела незалежні — тягнемо паралельно.
-  const [popular, weather] = await Promise.all([
+  // Джерела незалежні — тягнемо паралельно.
+  const [popular, weather, rates] = await Promise.all([
     getPopularArticles(5),
     getWeather(),
+    getRates(),
   ]);
 
   return (
@@ -68,6 +70,25 @@ export default async function Sidebar() {
             )}
           </div>
         )}
+      </section>
+
+      {/* Курс валют — окрема спокійна плашка (перенесено з шапки). Джерело — НБУ. */}
+      <section className="rounded-xl border border-neutral-200 bg-white p-5">
+        <p className="text-sm font-medium text-neutral-500">Курс валют · НБУ</p>
+        <div className="mt-3 grid grid-cols-2 gap-3">
+          <div className="flex items-baseline justify-between rounded-lg bg-neutral-50 px-3 py-2">
+            <span className="text-sm font-semibold text-neutral-500">USD</span>
+            <span className="text-lg font-black tabular-nums text-neutral-900">
+              {formatRateUk(rates.usd)}
+            </span>
+          </div>
+          <div className="flex items-baseline justify-between rounded-lg bg-neutral-50 px-3 py-2">
+            <span className="text-sm font-semibold text-neutral-500">EUR</span>
+            <span className="text-lg font-black tabular-nums text-neutral-900">
+              {formatRateUk(rates.eur)}
+            </span>
+          </div>
+        </div>
       </section>
     </aside>
   );

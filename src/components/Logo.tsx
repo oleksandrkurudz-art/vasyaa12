@@ -2,42 +2,45 @@ import Link from "next/link";
 import { SITE_NAME, SITE_SLOGAN } from "@/lib/categories";
 
 /**
- * Фірмовий знак НРГ: біле «НРГ» на плашці фірмового синього.
- * - `variant="plate"` (типово) — компактна заокруглена плашка (підвал, смуга меню).
- * - `variant="band"` — плашка тягнеться на всю висоту контейнера (синя смуга
- *   згори донизу хедера). Потребує, щоб батько-flex був `items-stretch` (або
- *   сам знак діставав `self-stretch`), і щоб контейнер не мав вертикального
- *   padding-у, який має «з'їсти» смуга.
+ * Фірмовий знак НРГ у стилі BBC — три квадратні плашки з літерами «Н», «Р», «Г».
+ * Плашки дають знаку вагу навіть дрібним/по центру (голі літери «губились»).
+ * `tone`:
+ *  • `onDark`  — на чорній шапці: білі плашки, чорні літери;
+ *  • `onLight` — на світлому (підвал): чорні плашки, білі літери (як у BBC).
+ * `size` керує кеглем/розміром плашок.
  */
 export default function Logo({
   size = "md",
-  variant = "plate",
+  tone = "onLight",
 }: {
   size?: "sm" | "md";
-  variant?: "plate" | "band";
+  tone?: "onDark" | "onLight";
 }) {
   const md = size === "md";
-  const word = md ? "text-2xl sm:text-3xl" : "text-xl";
-  const box =
-    variant === "band"
-      ? "self-stretch rounded-none px-4 sm:px-5"
-      : md
-        ? "rounded-md px-2.5 py-1"
-        : "rounded-md px-2 py-0.5";
+  const box = md
+    ? "h-8 w-8 text-lg sm:h-10 sm:w-10 sm:text-[1.35rem]"
+    : "h-7 w-7 text-sm";
+  // На головному хедері (md) — більший відступ між плашками; у компактному барі/
+  // підвалі (sm) лишаємо щільніше.
+  const gap = md ? "gap-2" : "gap-1";
+  const colors =
+    tone === "onDark" ? "bg-white text-neutral-950" : "bg-neutral-950 text-white";
 
   return (
     <Link
       href="/"
       aria-label={`${SITE_NAME} — ${SITE_SLOGAN}`}
-      className={`flex min-w-0 shrink-0 ${
-        variant === "band" ? "items-stretch self-stretch" : "items-center"
-      }`}
+      className={`flex shrink-0 items-center ${gap}`}
     >
-      <span
-        className={`inline-flex items-center bg-brand-600 font-display font-black leading-none tracking-tight text-white ${box} ${word}`}
-      >
-        {SITE_NAME}
-      </span>
+      {SITE_NAME.split("").map((letter, i) => (
+        <span
+          key={i}
+          aria-hidden
+          className={`flex items-center justify-center rounded-[2px] font-display font-black leading-none ${box} ${colors}`}
+        >
+          {letter}
+        </span>
+      ))}
     </Link>
   );
 }

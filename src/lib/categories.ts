@@ -13,10 +13,12 @@ export type CategoryDef = {
 export const CATEGORIES: CategoryDef[] = [
   { slug: "novyny", name: "Новини", group: "primary" },
   { slug: "polityka", name: "Влада", group: "primary" },
-  { slug: "biznes", name: "Бізнес", group: "primary" },
   { slug: "afisha", name: "Події", group: "primary" },
   { slug: "lyudy", name: "Люди", group: "primary" },
   { slug: "ogoloshennya", name: "Оголошення", group: "primary" },
+  // «Бізнес» (новинна рубрика) — під «Ще»: у смузі її місце зайняла пігулка
+  // «Каталог бізнесу» (окремий сервіс-каталог підприємств, головна монетизація).
+  { slug: "biznes", name: "Бізнес", group: "more" },
   { slug: "foto", name: "Фотогалерея", group: "more" },
   { slug: "vakansii", name: "Вакансії", group: "more" },
   { slug: "nekrolohy", name: "Пам'ять", group: "more" },

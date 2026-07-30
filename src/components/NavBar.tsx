@@ -1,22 +1,19 @@
-import NavLinks from "@/components/NavLinks";
+import StickyNav from "@/components/StickyNav";
+import { getActiveCommunity, getCommunities } from "@/lib/community-filter";
 
-// Меню розділів окремою липкою смугою (десктоп/планшет): лишається зверху при
-// скролі, а темна шапка йде вгору. На телефоні розділи живуть у бургері (шапка),
-// тож смугу ховаємо (`hidden sm:block`).
-export default function NavBar() {
+// Липка смуга розділів під чорним масthead-ом НРГ (десктоп/планшет). Логіку двох
+// станів (повна навігація ↔ компактний бар на скролі) тримає клієнтський
+// `StickyNav`; тут лише тягнемо дані про громади для перемикача локації.
+export default async function NavBar() {
+  const [communities, activeCommunity] = await Promise.all([
+    getCommunities(),
+    getActiveCommunity(),
+  ]);
+
   return (
-    <div className="sticky top-0 z-30 hidden sm:block">
-      {/* Тонкий нейтральний «капелюх» — м'який край між темним хедером і смугою.
-          Синій лишаємо для дій/категорій, а не для декору. */}
-      <div className="h-0.5 bg-neutral-300" />
-
-      {/* Світло-сіра смуга меню: м'якший перехід від темного хедера, ніж різко-біла.
-          Легка тінь відділяє її від контенту нижче. */}
-      <div className="border-b border-neutral-200 bg-neutral-100 shadow-md">
-        <nav className="px-4 sm:px-6">
-          <NavLinks />
-        </nav>
-      </div>
-    </div>
+    <StickyNav
+      communities={communities}
+      activeCommunitySlug={activeCommunity?.slug ?? null}
+    />
   );
 }
