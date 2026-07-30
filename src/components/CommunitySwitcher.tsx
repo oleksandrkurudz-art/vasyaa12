@@ -70,10 +70,10 @@ export default function CommunitySwitcher({
         disabled={pending}
         onClick={() => setOpen((v) => !v)}
         title="Оберіть громаду"
-        className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold transition-colors disabled:opacity-60 ${
+        className={`flex items-center gap-1.5 px-1.5 py-1.5 text-sm font-semibold transition-colors disabled:opacity-60 ${
           light
-            ? "bg-neutral-200 text-neutral-800 hover:bg-neutral-300"
-            : "border border-white/15 text-white hover:border-white/40 hover:bg-white/5"
+            ? "text-neutral-800 hover:text-neutral-950"
+            : "text-white hover:text-neutral-200"
         }`}
       >
         {/* Брендова шпилька замість емодзі — однакова на всіх пристроях */}

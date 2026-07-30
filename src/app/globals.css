@@ -41,3 +41,10 @@ body {
   font-family: var(--font-unbounded), system-ui, sans-serif;
   letter-spacing: -0.02em;
 }
+
+/* Інтерактивні кнопки — курсор-«рука» при наведенні (Tailwind v4 preflight
+   лишає кнопкам default-стрілку). */
+button:not(:disabled),
+[role="button"]:not(:disabled) {
+  cursor: pointer;
+}

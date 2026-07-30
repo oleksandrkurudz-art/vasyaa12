@@ -43,10 +43,10 @@ export default function HeaderSearch({
         type="button"
         onClick={() => setOpen(true)}
         aria-label="Пошук новин"
-        className={`flex items-center gap-1.5 border px-3 py-1.5 text-xs font-medium transition-colors ${
+        className={`flex items-center gap-1.5 px-1.5 py-1.5 text-sm font-medium transition-colors ${
           light
-            ? "border-neutral-300 text-neutral-600 hover:border-neutral-400 hover:bg-neutral-100 hover:text-neutral-900"
-            : "border-white/20 text-neutral-300 hover:border-white/40 hover:bg-white/5 hover:text-white"
+            ? "text-neutral-600 hover:text-neutral-900"
+            : "text-neutral-100 hover:text-white"
         }`}
       >
         <SearchIcon />
